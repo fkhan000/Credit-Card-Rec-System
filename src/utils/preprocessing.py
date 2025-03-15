@@ -1,8 +1,14 @@
 from typing import Dict, Any, List
 from torch import Tensor
 from datetime import datetime
+import torch
 class Preprocessing:
-    def __init__(self, mcc_default):
+    def __init__(self,
+                 mcc_default,
+                 transaction_means: Tensor | None = None,
+                 transaction_vars: Tensor | None = None,
+                 demographic_means: Tensor | None = None,
+                 demographic_vars: Tensor | None = None):
         self.default_agg_transaction = {"MCC_1": mcc_default,
                                         "MCC_2": mcc_default,
                                         "MCC_1_Amount": 0,
@@ -13,6 +19,17 @@ class Preprocessing:
                                         "Min_Zip": float("inf")}
         self.transaction_fields = ["MCC_1", "MCC_2", "MCC_1_Amount", "MCC_2_Amount", "num_transactions", "Average_Zip", "Max_Zip", "Min_Zip"]
         
+        self.demographic_fields = ["Birth Year",
+                                   "Gender",
+                                   "Zipcode",
+                                   "Per Capita Income - Zipcode",
+                                   "Yearly Income - Person",
+                                   "Total Debt",
+                                   "FICO Score"]
+        self.transaction_means = transaction_means
+        self.transaction_vars = transaction_vars
+        self.demographic_means = demographic_means
+        self.demographic_vars = demographic_vars
 
     
     def get_date(self, year, month, day) -> datetime:
@@ -60,20 +77,25 @@ class Preprocessing:
         for aggregate in weekly_transactions:
             transaction_data.append(list(map(aggregate.get, self.transaction_fields)))
         
-        tensor_data = Tensor(transaction_data)
+        tensor_data = Tensor(transaction_data, dtype=torch.float32)
+        if self.transaction_vars:
+            tensor_data = torch.div((tensor_data - self.transaction_means),
+                                    self.transaction_vars)
         return tensor_data
+    
 
-
-
-
-        # each element represents a single transaction ordered by 
-        #TODO: Add preprocessing step for transaction history
-        pass
-
-    def preprocess_demographic(self, x: Dict[str, Any]) -> Tensor:
+    def preprocess_demographic(self, demographic_info: Dict[str, Any]) -> Tensor:
         """
         Preprocesses the demographic information provided in data/sd254_users.csv (credit limit in sd254_cards.csv could be useful too).
         Returns a tensor of size D where D is the number of demographic features.
         """
-        #TODO: Add preprocessing step for demographic information
-        pass 
+
+        gender = demographic_info["Gender"]
+        demographic_info["Gender"] = 1 if gender =="Male" else 0
+
+        demographic_data = Tensor(list(map(demographic_info.get, self.demographic_fields)), dtype=torch.float32)
+
+        if self.demographic_means:
+            demographic_data = torch.div((demographic_data - self.demographic_means),
+                                    self.demographic_vars)
+        return demographic_data
