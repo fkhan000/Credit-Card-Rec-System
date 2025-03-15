@@ -86,3 +86,22 @@ class RecommendationSystem(nn.Module):
         item_latent = self.itemEmbeddings(x[1])
         score = self.NCF(torch.concat((user_latent, item_latent), dim=-1))
         return score
+    
+    def learn(self, train_data, optimizer, num_epochs):
+        loss_fn = torch.nn.BCELoss()
+        
+        for epoch in range(1, num_epochs + 1):
+            total_loss = 0
+            
+            for batch in train_data:
+                user_input, item_input, label = batch
+                predicted_score = self((user_input, item_input))
+                
+                optimizer.zero_grad()
+                loss = loss_fn(predicted_score, label.float())
+                loss.backward()
+                optimizer.step()
+                
+                total_loss += loss.item()
+
+            print(f"Epoch {epoch}/{num_epochs}, Average Loss: {total_loss / len(train_data):.4f}")
