@@ -2,6 +2,8 @@ from typing import Dict, Any, List
 from torch import Tensor
 from datetime import datetime
 import torch
+import pandas as pd
+
 class Preprocessing:
     """
     A class for preprocessing transaction and demographic data to be used as input for machine learning models.
@@ -16,19 +18,24 @@ class Preprocessing:
         demographic_vars (Tensor, optional): Variance values for demographic normalization.
     """
     def __init__(self,
-                 mcc_default,
+                 trans_df: pd.DataFrame | None = None,
+                 expected_weeks: int = 6,
+                 mcc_default: int | None = -1,
                  transaction_means: Tensor | None = None,
                  transaction_vars: Tensor | None = None,
                  demographic_means: Tensor | None = None,
                  demographic_vars: Tensor | None = None):
+        
+        if trans_df is not None:
+            mcc_default = trans_df["MCC"].mean()
         self.default_agg_transaction = {"MCC_1": mcc_default,
                                         "MCC_2": mcc_default,
                                         "MCC_1_Amount": 0,
                                         "MCC_2_Amount": 0,
                                         "num_transactions": 0,
-                                        "Average_Zip": -1,
-                                        "Max_Zip": -float("inf"),
-                                        "Min_Zip": float("inf")}
+                                        "Average_Zip": 0,
+                                        "Max_Zip": -1,
+                                        "Min_Zip": 99999}
         self.transaction_fields = ["MCC_1", "MCC_2", "MCC_1_Amount", "MCC_2_Amount", "num_transactions", "Average_Zip", "Max_Zip", "Min_Zip"]
         
         self.demographic_fields = ["Birth Year",
@@ -42,6 +49,8 @@ class Preprocessing:
         self.transaction_vars = transaction_vars
         self.demographic_means = demographic_means
         self.demographic_vars = demographic_vars
+        
+        self.expected_weeks = expected_weeks
 
     
     def get_date(self, year: int, month: int, day: int) -> datetime:
@@ -99,7 +108,10 @@ class Preprocessing:
             
             mcc_amounts[transaction["MCC"]] = mcc_amounts.get(transaction["MCC"], 0) + transaction["Amount"]
             aggregated_transaction["Average_Zip"] += transaction["Zip"]
-            
+        
+        if len(weekly_transactions) < self.expected_weeks:
+            weekly_transactions += [self.default_agg_transaction]*(self.expected_weeks - len(weekly_transactions))
+        
         transaction_data = []
         for aggregate in weekly_transactions:
             transaction_data.append(list(map(aggregate.get, self.transaction_fields)))
@@ -134,3 +146,18 @@ class Preprocessing:
             demographic_data = torch.div((demographic_data - self.demographic_means),
                                     self.demographic_vars)
         return demographic_data
+
+    def prepare_dataset(self, df: pd.DataFrame):
+        """Replaces nan values with their mode for categorical columns and nan values with their mean for numerical columns"""
+        
+        categorical_cols = df.select_dtypes(include=['object']).columns
+        numerical_cols = df.select_dtypes(include=['number']).columns
+
+        for col in categorical_cols:
+            mode_value = df[col].mode()[0]
+            df[col].fillna(mode_value, inplace=True)
+
+        for col in numerical_cols:
+            mean_value = df[col].mean()
+            df[col].fillna(mean_value, inplace=True)
+        return df
