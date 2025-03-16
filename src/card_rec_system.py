@@ -129,3 +129,22 @@ class RecommendationSystem(nn.Module):
 
 
             print(f"Epoch {epoch}/{num_epochs}, Average Loss: {total_loss / len(train_data):.4f}")
+    
+    def predict(self, data):
+        self.eval()
+        correct = 0
+        total = 0
+        with torch.no_grad():
+            for batch in data:
+                user_input, item_input, label = batch
+                predicted_score = self((user_input, item_input))
+
+                preds = (predicted_score >= 0.5).int().squeeze(-1)
+
+                correct += (preds == label.int()).sum().item()
+                total += label.size(0)
+        accuracy = correct / total if total > 0 else 0
+        return accuracy
+
+
+

@@ -97,17 +97,31 @@ class CreditDataset(Dataset):
 
 def load_data(num_weeks: int = 6, batch_size = 64):
     #TODO: Split the dataset into a train and test set
-    demographic_filename = os.path.join("..", "data", "sd254_users.csv")
-    transaction_filename = os.path.join("..", "data", "credit_card_transactions-ibm_v2.csv")
+    train_demographic_filename = os.path.join("..", "data", "train_users.csv")
+    train_transaction_filename = os.path.join("..", "data", "train_transactions.csv")
     credit_card_filename = os.path.join("..", "data", "sd254_cards.csv")
 
-    training_data = CreditDataset(transaction_filename,
-                                  demographic_filename,
+    training_data = CreditDataset(train_transaction_filename,
+                                  train_demographic_filename,
                                   credit_card_filename,
                                   num_weeks=num_weeks)
+                                  
     
     train_dataloader = DataLoader(
         training_data, batch_size=batch_size, shuffle=True,
     )
 
-    return training_data, train_dataloader
+    test_demographic_filename = os.path.join("..", "data", "test_users.csv")
+    test_transaction_filename = os.path.join("..", "data", "test_transactions.csv")
+
+    test_data = CreditDataset(test_transaction_filename,
+                                  test_demographic_filename,
+                                  credit_card_filename,
+                                  num_weeks=num_weeks)
+                                  
+    
+    test_dataloader = DataLoader(
+        test_data, batch_size=batch_size, shuffle=True,
+    )
+
+    return training_data, train_dataloader, test_data, test_dataloader
