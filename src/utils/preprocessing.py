@@ -67,7 +67,7 @@ class Preprocessing:
         Returns:
             Dict[str, Any]: The updated aggregated transaction data.
         """
-        mccs = sorted(mcc_amounts.keys(), key=mcc_amounts.get, reverse=True)
+        mccs = sorted(list(mcc_amounts.keys()), key=mcc_amounts.get, reverse=True)
         if len(mccs) > 0:
             aggregated_transaction["MCC_1"] = mccs[0]
             aggregated_transaction["MCC_1_Amount"] = mcc_amounts[mccs[0]]
@@ -77,6 +77,10 @@ class Preprocessing:
         aggregated_transaction["Average_Zip"] /= aggregated_transaction["num_transactions"]
 
         return aggregated_transaction
+    
+    def convert_currency(self, value):
+        """Removes currency symbols and converts to float."""
+        return float(value.replace("$", "").replace(",", ""))
 
     def preprocess_transaction(self, transactions: List[Dict[str, Any]]) -> Tensor:
         """
@@ -105,10 +109,15 @@ class Preprocessing:
                 aggregated_transaction = self.default_agg_transaction.copy()
                 mcc_amounts = {}
                 start_date = self.get_date(transaction["Year"],transaction["Month"],transaction["Day"])
-            
-            mcc_amounts[transaction["MCC"]] = mcc_amounts.get(transaction["MCC"], 0) + transaction["Amount"]
+            amount = self.convert_currency(transaction["Amount"])
+            mcc_amounts[transaction["MCC"]] = mcc_amounts.get(transaction["MCC"], 0) + amount
             aggregated_transaction["Average_Zip"] += transaction["Zip"]
-        
+            aggregated_transaction["Max_Zip"] = max(aggregated_transaction["Max_Zip"],
+                                                    transaction["Zip"])
+            aggregated_transaction["Min_Zip"] = min(aggregated_transaction["Min_Zip"],
+                                                    transaction["Zip"])
+            aggregated_transaction["num_transactions"] += 1
+
         if len(weekly_transactions) < self.expected_weeks:
             weekly_transactions += [self.default_agg_transaction]*(self.expected_weeks - len(weekly_transactions))
         
@@ -138,6 +147,11 @@ class Preprocessing:
 
         gender = demographic_info["Gender"]
         demographic_info["Gender"] = 1 if gender =="Male" else 0
+
+        for feature in ["Per Capita Income - Zipcode",
+                        "Yearly Income - Person",
+                        "Total Debt"]:
+            demographic_info[feature] = self.convert_currency(demographic_info[feature])
 
         demographic_data = torch.tensor(list(map(demographic_info.get, self.demographic_fields)),
                                         dtype=torch.float32)

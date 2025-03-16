@@ -4,42 +4,44 @@ import pandas as pd
 from utils.preprocessing import Preprocessing
 import numpy as np
 import os
-
+from tqdm import tqdm
 class CreditDataset(Dataset):
     def __init__(self, transaction_filename: str, demographic_filename: str, credit_card_filename: str, num_weeks: int = 6):
-        self.preprocessor = Preprocessing(-1)
-        demographic_df = pd.read_csv(demographic_filename)
-        self.demographic_data = self.load_demographic_dataset(demographic_df)
 
         self.num_weeks = num_weeks
-        transaction_df = pd.read_csv(transaction_filename)
+        transaction_df = pd.read_csv(transaction_filename,
+                                     usecols=["User", "MCC", "Year", "Month", "Day", "Zip", "Amount"])
+        self.preprocessor = Preprocessing(transaction_df)
         self.transaction_data = self.load_transaction_dataset(transaction_df)
         self.num_users = len(transaction_df["User"].unique())
         self.total_transactions = sum(len(user_data) for user_data in self.transaction_data)
 
+        demographic_df = pd.read_csv(demographic_filename)
+        self.demographic_data = self.load_demographic_dataset(demographic_df)
         credit_card_data = pd.read_csv(credit_card_filename)
         self.user_labels = self.load_credit_card_data(credit_card_data)
         self.num_credit_cards = len(self.user_labels[0])
 
-    
     def load_demographic_dataset(self, demographic_df: pd.DataFrame):
         demographic_df = self.preprocessor.prepare_dataset(demographic_df)
         tensor_data = []
         for _, row in demographic_df.iterrows():
             tensor_data.append(
-                self.preprocessor.preprocess_transaction(row.to_dict()))
+                self.preprocessor.preprocess_demographic(row.to_dict()))
         
-        tensor_data = torch.tensor(tensor_data, dtype=torch.float32)
+        tensor_data = torch.stack(tensor_data)
         return tensor_data
 
     def load_transaction_dataset(self, transaction_df: pd.DataFrame):
+
+        transaction_df = self.preprocessor.prepare_dataset(transaction_df)
 
         transaction_df['Date'] = pd.to_datetime(transaction_df[['Year', 'Month', 'Day']])
         transaction_df = transaction_df.sort_values(by=['User', 'Date'])
 
         tensor_data = []
 
-        for _, user_transactions in transaction_df.groupby("User"):
+        for _, user_transactions in tqdm(transaction_df.groupby("User")):
             user_transactions = user_transactions.sort_values("Date")
             user_transaction_data = []
             start_index = 0
@@ -57,10 +59,10 @@ class CreditDataset(Dataset):
                 user_transaction_data.append(aggregated_transaction)
 
                 start_index += len(subset)
-            
+            user_transaction_data = torch.stack(user_transaction_data)
             tensor_data.append(user_transaction_data)
 
-        tensor_data = torch.tensor(tensor_data, dtype=torch.float32)
+        tensor_data = torch.concatenate(tensor_data)
         
         return tensor_data
 
@@ -80,13 +82,11 @@ class CreditDataset(Dataset):
         transaction_idx = torch.randint(0, self.transaction_data[user_idx].shape[0], (1,)).item()
         transaction_data = self.transaction_data[user_idx][transaction_idx]
 
-        credit_index = torch.randint(0, self.num_credit_cards)
-        item_vector = torch.zeros(self.num_credit_cards)
-        item_vector[credit_index] = 1
+        credit_index = torch.randint(0, self.num_credit_cards, (1,))
 
         label = self.user_labels[user_idx][credit_index]
 
-        return [[demographic_data, transaction_data], item_vector], label
+        return [demographic_data, transaction_data], credit_index, label
     
     def __len__(self):
         return self.total_transactions

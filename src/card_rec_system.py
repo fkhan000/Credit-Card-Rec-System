@@ -13,12 +13,13 @@ The system is designed for recommending credit cards to users based on their tra
 import torch
 from torch import nn, Tensor
 from typing import Tuple
+from tqdm import tqdm
 
 class TransactionModel(nn.Module):
     """Component of user latent model for processing user transaction history."""
     def __init__(self, transaction_dim: int, latent_dim: int):
         super(TransactionModel, self).__init__()
-        encoder_layer = nn.TransformerEncoderLayer(d_model=transaction_dim, nhead=3)
+        encoder_layer = nn.TransformerEncoderLayer(d_model=transaction_dim, nhead=2)
         self.encoder = nn.TransformerEncoder(encoder_layer, 3)
         self.output_layer = nn.Linear(transaction_dim, latent_dim)
     
@@ -83,7 +84,8 @@ class RecommendationSystem(nn.Module):
 
     def forward(self, x: Tuple[Tuple[Tensor, Tensor], Tensor]) -> Tensor:
         user_latent = self.userLatentModel(x[0])
-        item_latent = self.itemEmbeddings(x[1])
+        item_indices = x[1].squeeze(-1)
+        item_latent = self.itemEmbeddings(item_indices)
         score = self.NCF(torch.concat((user_latent, item_latent), dim=-1))
         return score
     
@@ -93,12 +95,12 @@ class RecommendationSystem(nn.Module):
         for epoch in range(1, num_epochs + 1):
             total_loss = 0
             
-            for batch in train_data:
+            for batch in tqdm(train_data):
                 user_input, item_input, label = batch
                 predicted_score = self((user_input, item_input))
                 
                 optimizer.zero_grad()
-                loss = loss_fn(predicted_score, label.float())
+                loss = loss_fn(predicted_score.squeeze(-1), label.float())
                 loss.backward()
                 optimizer.step()
                 
