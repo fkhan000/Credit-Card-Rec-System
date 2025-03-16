@@ -174,4 +174,9 @@ class Preprocessing:
         for col in numerical_cols:
             mean_value = df[col].mean()
             df[col].fillna(mean_value, inplace=True)
+        
+        exclude_cols = ['Month', 'Year', 'Day']
+        columns_to_normalize = [col for col in numerical_cols if col not in exclude_cols]
+        df[columns_to_normalize] = (df[columns_to_normalize] - df[columns_to_normalize].mean()) / df[columns_to_normalize].std()
+
         return df
