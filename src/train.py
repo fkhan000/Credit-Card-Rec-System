@@ -1,7 +1,8 @@
 from load_data import load_data
 from card_rec_system import RecommendationSystem
 import torch.optim as optim
-
+import os
+import torch
 
 if __name__ == "__main__":
     training_data, train_dataloader, test_data, test_dataloader = load_data()
@@ -16,3 +17,6 @@ if __name__ == "__main__":
     model.learn(train_dataloader, optimizer, 1)
 
     print("Accuracy: ", model.predict(test_dataloader))
+
+    torch.save(model,
+               os.path.join("..", "models", "rec_system.pth"))

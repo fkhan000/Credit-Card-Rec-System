@@ -96,7 +96,7 @@ class CreditDataset(Dataset):
         return self.total_transactions
 
 def load_data(num_weeks: int = 6, batch_size = 64):
-    #TODO: Split the dataset into a train and test set
+
     train_demographic_filename = os.path.join("..", "data", "train_users.csv")
     train_transaction_filename = os.path.join("..", "data", "train_transactions.csv")
     credit_card_filename = os.path.join("..", "data", "sd254_cards.csv")
