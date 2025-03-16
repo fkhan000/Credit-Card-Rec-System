@@ -86,8 +86,16 @@ class CreditDataset(Dataset):
         transaction_idx = torch.randint(0, self.transaction_data[user_idx].shape[0], (1,)).item()
         transaction_data = self.transaction_data[user_idx][transaction_idx]
 
-        credit_index = torch.randint(0, self.num_credit_cards, (1,))
+        target_label = torch.randint(0, 2, (1,)).item()
 
+        user_labels = np.array(self.user_labels[user_idx])
+        credit_indices = np.where(user_labels == target_label)[0]
+        
+        if credit_indices.size == 0:
+            credit_index = torch.randint(0, self.num_credit_cards, (1,)).item()
+        else:
+            credit_index = np.random.choice(credit_indices)
+        
         label = self.user_labels[user_idx][credit_index]
 
         return [demographic_data, transaction_data], credit_index, label
