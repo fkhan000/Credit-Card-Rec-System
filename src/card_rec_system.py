@@ -111,7 +111,7 @@ class RecommendationSystem(nn.Module):
         for epoch in range(1, num_epochs + 1):
             total_loss = 0
             loss = 0
-            iterations = 0
+            iterations = 1
             pbar = tqdm(train_data, desc="Loss: 0.0000")
             for batch in pbar:
                 user_input, item_input, label = batch
@@ -126,7 +126,7 @@ class RecommendationSystem(nn.Module):
                 total_loss += loss.item()
                 if iterations % 100 == 0:
                     current_loss = total_loss / (iterations * len(batch))
-                    pbar.set_description(f"Loss: {current_loss.item():.4f}")
+                    pbar.set_description(f"Loss: {current_loss:.4f}")
                 iterations += 1
 
 
