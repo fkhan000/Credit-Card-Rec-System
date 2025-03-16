@@ -19,8 +19,8 @@ class TransactionModel(nn.Module):
     """Component of user latent model for processing user transaction history."""
     def __init__(self, transaction_dim: int, latent_dim: int):
         super(TransactionModel, self).__init__()
-        encoder_layer = nn.TransformerEncoderLayer(d_model=transaction_dim, nhead=2)
-        self.encoder = nn.TransformerEncoder(encoder_layer, 3)
+        encoder_layer = nn.TransformerEncoderLayer(d_model=transaction_dim, nhead=1)
+        self.encoder = nn.TransformerEncoder(encoder_layer, 4)
         self.output_layer = nn.Linear(transaction_dim, latent_dim)
     
     def forward(self, x: Tensor) -> Tensor:
@@ -34,7 +34,6 @@ class DemographicModel(nn.Module):
         super(DemographicModel, self).__init__()
         self.model = nn.Sequential(
             nn.Linear(demographic_dim, latent_dim),
-            nn.BatchNorm1d(latent_dim),
             nn.ReLU(),
             nn.Linear(latent_dim, latent_dim),
             nn.ReLU()
@@ -51,6 +50,8 @@ class UserLatentNet(nn.Module):
         self.demographicModel = DemographicModel(demographic_dim, latent_dim)
         self.latentModel = nn.Sequential(
             nn.Linear(2 * latent_dim, latent_dim),
+            nn.ReLU(),
+            nn.Linear(latent_dim, latent_dim),
             nn.ReLU(),
             nn.Linear(latent_dim, latent_dim),
             nn.ReLU()
@@ -124,7 +125,8 @@ class RecommendationSystem(nn.Module):
 
                 total_loss += loss.item()
                 if iterations % 100 == 0:
-                    pbar.set_description(f"Loss: {loss.item():.4f}")
+                    current_loss = total_loss / (iterations * len(batch))
+                    pbar.set_description(f"Loss: {current_loss.item():.4f}")
                 iterations += 1
 
 
@@ -135,15 +137,16 @@ class RecommendationSystem(nn.Module):
         correct = 0
         total = 0
         with torch.no_grad():
-            for batch in data:
-                user_input, item_input, label = batch
-                predicted_score = self((user_input, item_input))
+            for _ in range(10):
+                for batch in data:
+                    user_input, item_input, label = batch
+                    predicted_score = self((user_input, item_input))
 
-                preds = (predicted_score >= 0.5).int().squeeze(-1)
+                    preds = (predicted_score >= 0.5).int().squeeze(-1)
 
-                correct += (preds == label.int()).sum().item()
-                total += label.size(0)
-        accuracy = correct / total if total > 0 else 0
+                    correct += (preds == label.int()).sum().item()
+                    total += label.size(0)
+        accuracy = correct / total
         return accuracy
 
 
