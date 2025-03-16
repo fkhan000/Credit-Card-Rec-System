@@ -35,6 +35,8 @@ class DemographicModel(nn.Module):
         self.model = nn.Sequential(
             nn.Linear(demographic_dim, latent_dim),
             nn.BatchNorm1d(latent_dim),
+            nn.ReLU(),
+            nn.Linear(latent_dim, latent_dim),
             nn.ReLU()
         )
     
@@ -48,7 +50,10 @@ class UserLatentNet(nn.Module):
         self.transactionModel = TransactionModel(transaction_dim, latent_dim)
         self.demographicModel = DemographicModel(demographic_dim, latent_dim)
         self.latentModel = nn.Sequential(
-            nn.Linear(2 * latent_dim, latent_dim)
+            nn.Linear(2 * latent_dim, latent_dim),
+            nn.ReLU(),
+            nn.Linear(latent_dim, latent_dim),
+            nn.ReLU()
         )
     
     def forward(self, x: Tuple[Tensor, Tensor]) -> Tensor:
@@ -82,8 +87,12 @@ class RecommendationSystem(nn.Module):
         )
         self.NCF = nn.Sequential(
             self.nonLinearMF,
+            nn.Linear(MF_hidden_size, MF_hidden_size),
+            nn.ReLU(),
+            nn.Linear(MF_hidden_size, MF_hidden_size),
+            nn.ReLU(),
             nn.Linear(MF_hidden_size, 1),
-            nn.Sigmoid()            
+            nn.Sigmoid()
         )
 
     def forward(self, x: Tuple[Tuple[Tensor, Tensor], Tensor]) -> Tensor:
@@ -100,18 +109,23 @@ class RecommendationSystem(nn.Module):
         
         for epoch in range(1, num_epochs + 1):
             total_loss = 0
-            
-            for batch in tqdm(train_data):
+            loss = 0
+            iterations = 0
+            pbar = tqdm(train_data, desc="Loss: 0.0000")
+            for batch in pbar:
                 user_input, item_input, label = batch
                 #print("Demographic Input: ", user_input[0])
                 predicted_score = self((user_input, item_input))
                 
                 optimizer.zero_grad()
                 loss = loss_fn(predicted_score.squeeze(-1), label.float())
-                print(loss)
                 loss.backward()
                 optimizer.step()
-                
+
                 total_loss += loss.item()
+                if iterations % 100 == 0:
+                    pbar.set_description(f"Loss: {loss.item():.4f}")
+                iterations += 1
+
 
             print(f"Epoch {epoch}/{num_epochs}, Average Loss: {total_loss / len(train_data):.4f}")

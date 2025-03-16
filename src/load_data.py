@@ -6,7 +6,11 @@ import numpy as np
 import os
 from tqdm import tqdm
 class CreditDataset(Dataset):
-    def __init__(self, transaction_filename: str, demographic_filename: str, credit_card_filename: str, num_weeks: int = 6):
+    def __init__(self,
+                 transaction_filename: str,
+                 demographic_filename: str,
+                 credit_card_filename: str,
+                 num_weeks: int = 6):
 
         self.num_weeks = num_weeks
         transaction_df = pd.read_csv(transaction_filename,
@@ -92,6 +96,7 @@ class CreditDataset(Dataset):
         return self.total_transactions
 
 def load_data(num_weeks: int = 6, batch_size = 64):
+    #TODO: Split the dataset into a train and test set
     demographic_filename = os.path.join("..", "data", "sd254_users.csv")
     transaction_filename = os.path.join("..", "data", "credit_card_transactions-ibm_v2.csv")
     credit_card_filename = os.path.join("..", "data", "sd254_cards.csv")
