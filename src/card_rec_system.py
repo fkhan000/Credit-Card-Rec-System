@@ -33,7 +33,9 @@ class DemographicModel(nn.Module):
     def __init__(self, demographic_dim: int, latent_dim: int):
         super(DemographicModel, self).__init__()
         self.model = nn.Sequential(
-            nn.Linear(demographic_dim, latent_dim)
+            nn.Linear(demographic_dim, latent_dim),
+            nn.BatchNorm1d(latent_dim),
+            nn.ReLU()
         )
     
     def forward(self, x: Tensor) -> Tensor:
@@ -52,6 +54,8 @@ class UserLatentNet(nn.Module):
     def forward(self, x: Tuple[Tensor, Tensor]) -> Tensor:
         ud = self.demographicModel(x[0])
         ut = self.transactionModel(x[1])
+        #print("Demographic output: ", ud)
+        #print("Transaction output: ", ut)
         ul = self.latentModel(torch.concat((ud, ut), dim=-1))
         return ul
 
@@ -84,8 +88,10 @@ class RecommendationSystem(nn.Module):
 
     def forward(self, x: Tuple[Tuple[Tensor, Tensor], Tensor]) -> Tensor:
         user_latent = self.userLatentModel(x[0])
+        #print("user_latent: ", user_latent)
         item_indices = x[1].squeeze(-1)
         item_latent = self.itemEmbeddings(item_indices)
+        #print("item_latent: ", item_latent)
         score = self.NCF(torch.concat((user_latent, item_latent), dim=-1))
         return score
     
@@ -97,10 +103,12 @@ class RecommendationSystem(nn.Module):
             
             for batch in tqdm(train_data):
                 user_input, item_input, label = batch
+                #print("Demographic Input: ", user_input[0])
                 predicted_score = self((user_input, item_input))
                 
                 optimizer.zero_grad()
                 loss = loss_fn(predicted_score.squeeze(-1), label.float())
+                print(loss)
                 loss.backward()
                 optimizer.step()
                 

@@ -109,8 +109,8 @@ class Preprocessing:
                 aggregated_transaction = self.default_agg_transaction.copy()
                 mcc_amounts = {}
                 start_date = self.get_date(transaction["Year"],transaction["Month"],transaction["Day"])
-            amount = self.convert_currency(transaction["Amount"])
-            mcc_amounts[transaction["MCC"]] = mcc_amounts.get(transaction["MCC"], 0) + amount
+            #amount = self.convert_currency(transaction["Amount"])
+            mcc_amounts[transaction["MCC"]] = mcc_amounts.get(transaction["MCC"], 0) + transaction["Amount"]
             aggregated_transaction["Average_Zip"] += transaction["Zip"]
             aggregated_transaction["Max_Zip"] = max(aggregated_transaction["Max_Zip"],
                                                     transaction["Zip"])
@@ -147,12 +147,7 @@ class Preprocessing:
 
         gender = demographic_info["Gender"]
         demographic_info["Gender"] = 1 if gender =="Male" else 0
-
-        for feature in ["Per Capita Income - Zipcode",
-                        "Yearly Income - Person",
-                        "Total Debt"]:
-            demographic_info[feature] = self.convert_currency(demographic_info[feature])
-
+        
         demographic_data = torch.tensor(list(map(demographic_info.get, self.demographic_fields)),
                                         dtype=torch.float32)
 
@@ -164,6 +159,15 @@ class Preprocessing:
     def prepare_dataset(self, df: pd.DataFrame):
         """Replaces nan values with their mode for categorical columns and nan values with their mean for numerical columns"""
         
+        currency_cols = ["Per Capita Income - Zipcode",
+                         "Yearly Income - Person",
+                         "Total Debt",
+                         "Amount"]
+        
+        for col in currency_cols:
+            if col in df.columns:
+                df[col] = df[col].apply(self.convert_currency)
+
         categorical_cols = df.select_dtypes(include=['object']).columns
         numerical_cols = df.select_dtypes(include=['number']).columns
 
