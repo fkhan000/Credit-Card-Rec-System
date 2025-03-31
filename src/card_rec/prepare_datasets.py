@@ -63,5 +63,5 @@ def get_card_type():
     credit_card_df.to_csv(credit_card_filename)
 
 if __name__ == "__main__":
-    #train_test_split()
-    get_card_type()
+    train_test_split()
+    #get_card_type()
