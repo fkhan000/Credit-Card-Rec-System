@@ -1,5 +1,5 @@
-from load_data import load_data
-from card_rec_system import RecommendationSystem
+from .load_data import load_data
+from .card_rec_system import RecommendationSystem
 import torch.optim as optim
 import os
 import torch

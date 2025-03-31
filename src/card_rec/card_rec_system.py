@@ -98,10 +98,8 @@ class RecommendationSystem(nn.Module):
 
     def forward(self, x: Tuple[Tuple[Tensor, Tensor], Tensor]) -> Tensor:
         user_latent = self.userLatentModel(x[0])
-        #print("user_latent: ", user_latent)
         item_indices = x[1].squeeze(-1)
         item_latent = self.itemEmbeddings(item_indices)
-        #print("item_latent: ", item_latent)
         score = self.NCF(torch.concat((user_latent, item_latent), dim=-1))
         return score
     
@@ -115,7 +113,6 @@ class RecommendationSystem(nn.Module):
             pbar = tqdm(train_data, desc="Loss: 0.0000")
             for batch in pbar:
                 user_input, item_input, label = batch
-                #print("Demographic Input: ", user_input[0])
                 predicted_score = self((user_input, item_input))
                 
                 optimizer.zero_grad()
@@ -125,7 +122,7 @@ class RecommendationSystem(nn.Module):
 
                 total_loss += loss.item()
                 if iterations % 100 == 0:
-                    current_loss = total_loss / (iterations * len(batch))
+                    current_loss = total_loss / (iterations * len(user_input))
                     pbar.set_description(f"Loss: {current_loss:.4f}")
                 iterations += 1
 

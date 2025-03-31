@@ -71,11 +71,16 @@ class CreditDataset(Dataset):
         return tensor_data
 
     def load_credit_card_data(self, credit_card_df: pd.DataFrame):
-        unique_brands = sorted(credit_card_df["Card Brand"].unique())
+        filtered_df = credit_card_df[credit_card_df["Credit Card Category"] != "UNKNOWN"]
+        unique_brands = (filtered_df["Credit Card Category"]
+                      .value_counts()
+                      .head(10)
+                      .index.tolist())
+        
         # Create one-hot vectors for each user
         user_labels = []
         for user, group in credit_card_df.groupby("User"):
-            label = [1 if brand in group["Card Brand"].values else 0 for brand in unique_brands]
+            label = [1 if brand in group["Credit Card Category"].values else 0 for brand in unique_brands]
             user_labels.append(label)
         return user_labels
     
