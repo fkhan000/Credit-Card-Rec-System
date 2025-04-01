@@ -14,7 +14,7 @@ if __name__ == "__main__":
     model.train()
     optimizer = optim.AdamW(model.parameters(), lr=0.001)
 
-    model.learn(train_dataloader, optimizer, 5)
+    model.learn(train_dataloader, optimizer, 2)
 
     print("Accuracy: ", model.predict(test_dataloader))
 
