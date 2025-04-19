@@ -150,6 +150,31 @@ class CreditDataset(Dataset):
     def __len__(self):
         return self.total_transactions
 
+class CreditRankDataset(CreditDataset):
+    def __init__(self,
+                 transaction_filename: str,
+                 demographic_filename: str,
+                 credit_card_filename: str,
+                 num_weeks: int = 6):
+        super().__init__(transaction_filename,
+                         demographic_filename,
+                         credit_card_filename,
+                         num_weeks=num_weeks)
+    
+    def __getitem__(self, index: int):
+        demographic_data = self.demographic_data[index]
+        transaction_idx = torch.randint(0, self.transaction_data[index].shape[0], (1,)).item()
+        transaction_data = self.transaction_data[index][transaction_idx]
+
+        user_ratings = torch.tensor(self.user_labels[index])
+        valid_card_indices = torch.where(user_ratings > 0)[0]
+
+        return [demographic_data, transaction_data], valid_card_indices, user_ratings
+
+    def __len__(self):
+        return len(self.user_labels)
+        
+
 def load_data(num_weeks: int = 6, batch_size = 64):
 
     train_demographic_filename = os.path.join("..", "data", "train_users.csv")
@@ -179,4 +204,10 @@ def load_data(num_weeks: int = 6, batch_size = 64):
     test_dataloader = DataLoader(
         test_data, batch_size=batch_size, shuffle=True,
     )
-    return training_data, train_dataloader, test_data, test_dataloader
+
+    credit_rank_data = CreditRankDataset(test_transaction_filename,
+                                         test_demographic_filename,
+                                         credit_card_filename,
+                                         num_weeks=num_weeks)
+    test_rank_dataloader = DataLoader(credit_rank_data)
+    return training_data, train_dataloader, test_data, test_dataloader, test_rank_dataloader

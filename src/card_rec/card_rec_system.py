@@ -15,6 +15,8 @@ from torch import nn, Tensor
 from typing import Tuple
 from tqdm import tqdm
 import numpy as np
+from scipy.stats import spearmanr
+
 
 class TransactionModel(nn.Module):
     """Component of user latent model for processing user transaction history."""
@@ -101,7 +103,6 @@ class RecommendationSystem(nn.Module):
         return score
     
     def learn(self, train_data, optimizer, num_epochs):
-        #loss_fn = torch.nn.BCEWithLogitsLoss()
         loss_fn = torch.nn.MSELoss()
         
         for epoch in range(1, num_epochs + 1):
@@ -140,10 +141,38 @@ class RecommendationSystem(nn.Module):
                     user_input, item_input, label = batch
                     predicted_score = self((user_input, item_input)).squeeze(-1)
 
-                    # Compute sum of squared errors
                     loss = loss_fn(predicted_score, label.float())
                     total_loss += loss.item()
                     total_samples += label.size(0)
 
         mse = total_loss / total_samples if total_samples > 0 else float('inf')
         return mse
+    
+    def rank_cards(self, user_data, card_indices):
+        scores = []
+        for card_index in card_indices:
+            score = self((user_data, torch.tensor([[card_index]]))).item()
+            scores.append(score)
+        return scores
+
+    def evaluate_ranking(self, data):
+
+        self.eval()
+        total_corr = 0
+        with torch.no_grad():
+            for index in range(len(data)):
+                user_corr = 0
+                for _ in range(15):
+                    dp = data[index]
+                    card_indices = dp[1]
+                    if len(card_indices) < 2:
+                        continue
+
+                    actual_ratings = dp[2]
+                    _, predicted_ratings = self.rank_cards(dp[0], card_indices).item()
+
+                    corr = spearmanr(actual_ratings, predicted_ratings).correlation
+                    user_corr += corr
+                total_corr += (user_corr / 15)
+        
+        return total_corr/len(data)
