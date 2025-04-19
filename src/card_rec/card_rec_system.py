@@ -14,13 +14,14 @@ import torch
 from torch import nn, Tensor
 from typing import Tuple
 from tqdm import tqdm
+import numpy as np
 
 class TransactionModel(nn.Module):
     """Component of user latent model for processing user transaction history."""
     def __init__(self, transaction_dim: int, latent_dim: int):
         super(TransactionModel, self).__init__()
         encoder_layer = nn.TransformerEncoderLayer(d_model=transaction_dim, nhead=1)
-        self.encoder = nn.TransformerEncoder(encoder_layer, 4)
+        self.encoder = nn.TransformerEncoder(encoder_layer, 2)
         self.output_layer = nn.Linear(transaction_dim, latent_dim)
     
     def forward(self, x: Tensor) -> Tensor:
@@ -88,10 +89,6 @@ class RecommendationSystem(nn.Module):
         )
         self.NCF = nn.Sequential(
             self.nonLinearMF,
-            nn.Linear(MF_hidden_size, MF_hidden_size),
-            nn.ReLU(),
-            nn.Linear(MF_hidden_size, MF_hidden_size),
-            nn.ReLU(),
             nn.Linear(MF_hidden_size, 1),
             nn.Sigmoid()
         )
@@ -104,7 +101,8 @@ class RecommendationSystem(nn.Module):
         return score
     
     def learn(self, train_data, optimizer, num_epochs):
-        loss_fn = torch.nn.BCELoss()
+        #loss_fn = torch.nn.BCEWithLogitsLoss()
+        loss_fn = torch.nn.MSELoss()
         
         for epoch in range(1, num_epochs + 1):
             total_loss = 0
@@ -123,28 +121,29 @@ class RecommendationSystem(nn.Module):
                 total_loss += loss.item()
                 if iterations % 100 == 0:
                     current_loss = total_loss / (iterations * len(user_input))
-                    pbar.set_description(f"Loss: {current_loss:.4f}")
+                    pbar.set_description(f"Loss: {2*current_loss:.4f}")
                 iterations += 1
 
 
             print(f"Epoch {epoch}/{num_epochs}, Average Loss: {total_loss / len(train_data):.4f}")
     
+    
     def predict(self, data):
         self.eval()
-        correct = 0
-        total = 0
+        total_loss = 0.0
+        total_samples = 0
+        loss_fn = torch.nn.MSELoss(reduction='sum')
+
         with torch.no_grad():
-            for _ in range(10):
+            for _ in range(5):
                 for batch in data:
                     user_input, item_input, label = batch
-                    predicted_score = self((user_input, item_input))
+                    predicted_score = self((user_input, item_input)).squeeze(-1)
 
-                    preds = (predicted_score >= 0.5).int().squeeze(-1)
+                    # Compute sum of squared errors
+                    loss = loss_fn(predicted_score, label.float())
+                    total_loss += loss.item()
+                    total_samples += label.size(0)
 
-                    correct += (preds == label.int()).sum().item()
-                    total += label.size(0)
-        accuracy = correct / total
-        return accuracy
-
-
-
+        mse = total_loss / total_samples if total_samples > 0 else float('inf')
+        return mse

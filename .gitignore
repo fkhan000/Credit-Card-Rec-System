@@ -1,3 +1,5 @@
 data/*
 *.env
-!data/sd254_cards.csv
+!data/cc_dataset_with_labels.csv
+!data/merchant_data.json
+!mcc_description.json

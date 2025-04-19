@@ -17,9 +17,9 @@ pip install -r requirements.txt
 
 ## 🔄 Data Preparation
 
-Split the dataset into training and testing sets by running:  
+Split the dataset into training and testing sets by going to the card_rec folder and running:  
 ```
-python src/train_test_split.py
+python prepare_datasets.py
 ```
 
 ## 🚀 Training the Model

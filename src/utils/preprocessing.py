@@ -27,7 +27,7 @@ class Preprocessing:
                  demographic_vars: Tensor | None = None):
         
         if trans_df is not None:
-            mcc_default = trans_df["MCC"].mean()
+            mcc_default = trans_df["Merchant Category"].mean()
         self.default_agg_transaction = {"MCC_1": mcc_default,
                                         "MCC_2": mcc_default,
                                         "MCC_1_Amount": 0,
@@ -110,7 +110,7 @@ class Preprocessing:
                 mcc_amounts = {}
                 start_date = self.get_date(transaction["Year"],transaction["Month"],transaction["Day"])
             #amount = self.convert_currency(transaction["Amount"])
-            mcc_amounts[transaction["MCC"]] = mcc_amounts.get(transaction["MCC"], 0) + transaction["Amount"]
+            mcc_amounts[transaction["Merchant Category"]] = mcc_amounts.get(transaction["Merchant Category"], 0) + transaction["Amount"]
             aggregated_transaction["Average_Zip"] += transaction["Zip"]
             aggregated_transaction["Max_Zip"] = max(aggregated_transaction["Max_Zip"],
                                                     transaction["Zip"])

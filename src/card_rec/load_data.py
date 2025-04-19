@@ -14,7 +14,7 @@ class CreditDataset(Dataset):
 
         self.num_weeks = num_weeks
         transaction_df = pd.read_csv(transaction_filename,
-                                     usecols=["User", "MCC", "Year", "Month", "Day", "Zip", "Amount"])
+                                     usecols=["User", "Merchant Category", "Year", "Month", "Day", "Zip", "Amount"])
         self.preprocessor = Preprocessing(transaction_df)
         self.transaction_data = self.load_transaction_dataset(transaction_df)
         self.num_users = len(transaction_df["User"].unique())
@@ -71,8 +71,36 @@ class CreditDataset(Dataset):
         return tensor_data
 
     def load_credit_card_data(self, credit_card_df: pd.DataFrame):
-        filtered_df = credit_card_df[credit_card_df["Credit Card Category"] != "UNKNOWN"]
-        unique_brands = (filtered_df["Credit Card Category"]
+
+        unique_categories = (
+            credit_card_df["Card Category"]
+            .value_counts()
+            .head(10)
+            .index.tolist()
+        )
+        self.card_categories = unique_categories
+
+        user_labels = {}
+
+        category_to_index = {cat: i for i, cat in enumerate(unique_categories)}
+
+        for user_id, group in credit_card_df.groupby("User"):
+            rating_vec = np.zeros(len(unique_categories))
+            for _, row in group.iterrows():
+                cat = row["Card Category"]
+                if cat in category_to_index:
+                    rating_vec[category_to_index[cat]] = row["Rating"]
+            user_labels[user_id] = rating_vec
+        
+        num_users = max(user_labels.keys()) + 1
+        user_label_list = [user_labels.get(i, np.zeros(len(unique_categories))) for i in range(num_users)]
+
+        return user_label_list
+
+        """
+        filtered_df = credit_card_df[credit_card_df["Card Category"] != "UNKNOWN"]
+        filtered_df["Card Category"] = filtered_df["Card Category"].apply(lambda x: x.split()[1])
+        unique_brands = (filtered_df["Card Category"]
                       .value_counts()
                       .head(10)
                       .index.tolist())
@@ -80,17 +108,30 @@ class CreditDataset(Dataset):
         # Create one-hot vectors for each user
         user_labels = []
         for user, group in credit_card_df.groupby("User"):
-            label = [1 if brand in group["Credit Card Category"].values else 0 for brand in unique_brands]
+            label = [1 if brand in group["Card Category"].values else 0 for brand in unique_brands]
             user_labels.append(label)
         return user_labels
+        """
     
     def __getitem__(self, index: int):
-
         user_idx = np.random.randint(0, self.num_users)
         demographic_data = self.demographic_data[user_idx]
         transaction_idx = torch.randint(0, self.transaction_data[user_idx].shape[0], (1,)).item()
         transaction_data = self.transaction_data[user_idx][transaction_idx]
 
+        user_ratings = np.array(self.user_labels[user_idx])
+        valid_card_indices = np.where(user_ratings > 0)[0]
+
+        if len(valid_card_indices) == 0:
+            credit_index = torch.randint(0, self.num_credit_cards, (1,)).item()
+            label = 0.0
+        else:
+            credit_index = np.random.choice(valid_card_indices)
+            label = user_ratings[credit_index]
+
+        return [demographic_data, transaction_data], credit_index, torch.tensor(label, dtype=torch.float32)
+
+        """
         target_label = torch.randint(0, 2, (1,)).item()
 
         user_labels = np.array(self.user_labels[user_idx])
@@ -104,6 +145,7 @@ class CreditDataset(Dataset):
         label = self.user_labels[user_idx][credit_index]
 
         return [demographic_data, transaction_data], credit_index, label
+        """
     
     def __len__(self):
         return self.total_transactions
@@ -112,8 +154,9 @@ def load_data(num_weeks: int = 6, batch_size = 64):
 
     train_demographic_filename = os.path.join("..", "data", "train_users.csv")
     train_transaction_filename = os.path.join("..", "data", "train_transactions.csv")
-    credit_card_filename = os.path.join("..", "data", "sd254_cards.csv")
+    credit_card_filename = os.path.join("..", "data", "cc_dataset_with_labels.csv")
 
+    
     training_data = CreditDataset(train_transaction_filename,
                                   train_demographic_filename,
                                   credit_card_filename,
@@ -136,5 +179,4 @@ def load_data(num_weeks: int = 6, batch_size = 64):
     test_dataloader = DataLoader(
         test_data, batch_size=batch_size, shuffle=True,
     )
-
     return training_data, train_dataloader, test_data, test_dataloader
