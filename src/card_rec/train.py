@@ -14,7 +14,7 @@ if __name__ == "__main__":
     model.train()
     optimizer = optim.AdamW(model.parameters(), lr=0.0005)
 
-    model.learn(train_dataloader, optimizer, 2)
+    model.learn(train_dataloader, optimizer, 1)
     model.eval()
 
     print("MSE Loss on Test Set: ", model.predict(test_dataloader))
