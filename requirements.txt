@@ -10,5 +10,7 @@ Requests==2.32.3
 scikit_learn==1.6.1
 scipy==1.15.2
 SQLAlchemy==2.0.27
+streamlit==1.44.1
 torch==2.6.0
 tqdm==4.67.1
+~treamlit==1.12.0
