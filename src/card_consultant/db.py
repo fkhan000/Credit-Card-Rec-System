@@ -112,7 +112,9 @@ class Merchant(Base):
 
 
 def main():
-    engine = create_engine('sqlite:///:memory:', echo=False)
+    db_path = os.path.join("..", "..", "data", "sqlite_database.db")
+    engine = create_engine(f'sqlite:///{db_path}', echo=False)
+    #engine = create_engine('sqlite:///:db::', echo=False)
     Base.metadata.create_all(engine)
 
     Session = sessionmaker(bind=engine)

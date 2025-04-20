@@ -209,10 +209,11 @@ class RecommendationSystem(nn.Module):
 
                 top_k_pred_indices = torch.topk(torch.tensor(predicted_scores), k_eff).indices.tolist()
 
-                top_k_actual_indices = torch.topk(actual_ratings, k_eff).indices.tolist()
+                #top_k_actual_indices = torch.topk(actual_ratings, k_eff).indices.tolist()
+                top_k_actual_indices = torch.topk(actual_ratings, 1).indices.tolist()
 
                 hits = len(set(top_k_pred_indices) & set(top_k_actual_indices))
-                recall = hits / k_eff
+                recall = hits # / k_eff
 
                 total_recall += recall
                 valid_users += 1

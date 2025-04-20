@@ -23,7 +23,7 @@ if __name__ == "__main__":
           model.evaluate_ranking(test_rank_dataset))
     print("Recall@2 Score:",
           model.recall_at_k(test_rank_dataset,
-                            k=2))
+                            k=1))
 
     torch.save(model,
                os.path.join("..", "models", "rec_system.pth"))
