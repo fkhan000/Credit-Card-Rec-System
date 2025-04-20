@@ -22,13 +22,14 @@ class TransactionModel(nn.Module):
     """Component of user latent model for processing user transaction history."""
     def __init__(self, transaction_dim: int, latent_dim: int):
         super(TransactionModel, self).__init__()
-        encoder_layer = nn.TransformerEncoderLayer(d_model=transaction_dim, nhead=1)
+        encoder_layer = nn.TransformerEncoderLayer(d_model=transaction_dim, nhead=1, batch_first=True)
         self.encoder = nn.TransformerEncoder(encoder_layer, 2)
         self.output_layer = nn.Linear(transaction_dim, latent_dim)
     
     def forward(self, x: Tensor) -> Tensor:
         ut = self.encoder(x)
         ut = self.output_layer(ut)
+        ut = ut.mean(dim=1)
         return ut
 
 class DemographicModel(nn.Module):
@@ -149,30 +150,71 @@ class RecommendationSystem(nn.Module):
         return mse
     
     def rank_cards(self, user_data, card_indices):
+        demo, tx = user_data
+
+        if demo.dim() == 1:
+            demo = demo.unsqueeze(0)
+        if tx.dim() == 2:
+            tx = tx.unsqueeze(0)
+        
         scores = []
         for card_index in card_indices:
-            score = self((user_data, torch.tensor([[card_index]]))).item()
+            score = self(((demo, tx), torch.tensor([[card_index]]))).item()
             scores.append(score)
         return scores
 
-    def evaluate_ranking(self, data):
+
+    def evaluate_ranking(self, data, num_trials=15):
 
         self.eval()
         total_corr = 0
+        count = 0
         with torch.no_grad():
             for index in range(len(data)):
                 user_corr = 0
-                for _ in range(15):
+                for _ in range(num_trials):
                     dp = data[index]
                     card_indices = dp[1]
+
                     if len(card_indices) < 2:
                         continue
 
                     actual_ratings = dp[2]
-                    _, predicted_ratings = self.rank_cards(dp[0], card_indices).item()
+                    predicted_ratings = self.rank_cards(dp[0], card_indices)
 
                     corr = spearmanr(actual_ratings, predicted_ratings).correlation
                     user_corr += corr
-                total_corr += (user_corr / 15)
+                if len(card_indices) < 2:
+                    continue
+                total_corr += (user_corr / num_trials)
+                count += 1
         
-        return total_corr/len(data)
+        return total_corr/count
+    
+    def recall_at_k(self, data, k=3):
+        self.eval()
+        total_recall = 0.0
+        valid_users = 0
+
+        with torch.no_grad():
+            for index in range(len(data)):
+                user_data, card_indices, actual_ratings = data[index]
+
+                if len(card_indices) < 2:
+                    continue
+
+                predicted_scores = self.rank_cards(user_data, card_indices)
+
+                k_eff = min(k, len(predicted_scores))
+
+                top_k_pred_indices = torch.topk(torch.tensor(predicted_scores), k_eff).indices.tolist()
+
+                top_k_actual_indices = torch.topk(actual_ratings, k_eff).indices.tolist()
+
+                hits = len(set(top_k_pred_indices) & set(top_k_actual_indices))
+                recall = hits / k_eff
+
+                total_recall += recall
+                valid_users += 1
+
+        return total_recall / valid_users if valid_users > 0 else float("nan")

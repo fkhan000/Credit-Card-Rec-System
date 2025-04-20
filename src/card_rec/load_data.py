@@ -10,6 +10,7 @@ class CreditDataset(Dataset):
                  transaction_filename: str,
                  demographic_filename: str,
                  credit_card_filename: str,
+                 card_categories = None,
                  num_weeks: int = 6):
 
         self.num_weeks = num_weeks
@@ -22,6 +23,8 @@ class CreditDataset(Dataset):
 
         demographic_df = pd.read_csv(demographic_filename)
         self.demographic_data = self.load_demographic_dataset(demographic_df)
+
+        self.card_categories = card_categories
         credit_card_data = pd.read_csv(credit_card_filename)
         self.user_labels = self.load_credit_card_data(credit_card_data)
         self.num_credit_cards = len(self.user_labels[0])
@@ -66,7 +69,7 @@ class CreditDataset(Dataset):
             user_transaction_data = torch.stack(user_transaction_data)
             tensor_data.append(user_transaction_data)
 
-        tensor_data = torch.concatenate(tensor_data)
+        #tensor_data = torch.concatenate(tensor_data)
         
         return tensor_data
 
@@ -78,14 +81,15 @@ class CreditDataset(Dataset):
             .head(10)
             .index.tolist()
         )
-        self.card_categories = unique_categories
+        if self.card_categories is None:
+            self.card_categories = unique_categories
 
         user_labels = {}
 
-        category_to_index = {cat: i for i, cat in enumerate(unique_categories)}
+        category_to_index = {cat: i for i, cat in enumerate(self.card_categories)}
 
         for user_id, group in credit_card_df.groupby("User"):
-            rating_vec = np.zeros(len(unique_categories))
+            rating_vec = np.zeros(len(self.card_categories))
             for _, row in group.iterrows():
                 cat = row["Card Category"]
                 if cat in category_to_index:
@@ -93,25 +97,9 @@ class CreditDataset(Dataset):
             user_labels[user_id] = rating_vec
         
         num_users = max(user_labels.keys()) + 1
-        user_label_list = [user_labels.get(i, np.zeros(len(unique_categories))) for i in range(num_users)]
+        user_label_list = [user_labels.get(i, np.zeros(len(self.card_categories))) for i in range(num_users)]
 
         return user_label_list
-
-        """
-        filtered_df = credit_card_df[credit_card_df["Card Category"] != "UNKNOWN"]
-        filtered_df["Card Category"] = filtered_df["Card Category"].apply(lambda x: x.split()[1])
-        unique_brands = (filtered_df["Card Category"]
-                      .value_counts()
-                      .head(10)
-                      .index.tolist())
-        
-        # Create one-hot vectors for each user
-        user_labels = []
-        for user, group in credit_card_df.groupby("User"):
-            label = [1 if brand in group["Card Category"].values else 0 for brand in unique_brands]
-            user_labels.append(label)
-        return user_labels
-        """
     
     def __getitem__(self, index: int):
         user_idx = np.random.randint(0, self.num_users)
@@ -130,22 +118,6 @@ class CreditDataset(Dataset):
             label = user_ratings[credit_index]
 
         return [demographic_data, transaction_data], credit_index, torch.tensor(label, dtype=torch.float32)
-
-        """
-        target_label = torch.randint(0, 2, (1,)).item()
-
-        user_labels = np.array(self.user_labels[user_idx])
-        credit_indices = np.where(user_labels == target_label)[0]
-        
-        if credit_indices.size == 0:
-            credit_index = torch.randint(0, self.num_credit_cards, (1,)).item()
-        else:
-            credit_index = np.random.choice(credit_indices)
-        
-        label = self.user_labels[user_idx][credit_index]
-
-        return [demographic_data, transaction_data], credit_index, label
-        """
     
     def __len__(self):
         return self.total_transactions
@@ -155,10 +127,12 @@ class CreditRankDataset(CreditDataset):
                  transaction_filename: str,
                  demographic_filename: str,
                  credit_card_filename: str,
+                 card_categories,
                  num_weeks: int = 6):
         super().__init__(transaction_filename,
                          demographic_filename,
                          credit_card_filename,
+                         card_categories=card_categories,
                          num_weeks=num_weeks)
     
     def __getitem__(self, index: int):
@@ -169,10 +143,10 @@ class CreditRankDataset(CreditDataset):
         user_ratings = torch.tensor(self.user_labels[index])
         valid_card_indices = torch.where(user_ratings > 0)[0]
 
-        return [demographic_data, transaction_data], valid_card_indices, user_ratings
+        return [demographic_data, transaction_data], valid_card_indices, user_ratings[valid_card_indices]
 
     def __len__(self):
-        return len(self.user_labels)
+        return len(self.demographic_data)
         
 
 def load_data(num_weeks: int = 6, batch_size = 64):
@@ -181,7 +155,6 @@ def load_data(num_weeks: int = 6, batch_size = 64):
     train_transaction_filename = os.path.join("..", "data", "train_transactions.csv")
     credit_card_filename = os.path.join("..", "data", "cc_dataset_with_labels.csv")
 
-    
     training_data = CreditDataset(train_transaction_filename,
                                   train_demographic_filename,
                                   credit_card_filename,
@@ -194,20 +167,22 @@ def load_data(num_weeks: int = 6, batch_size = 64):
 
     test_demographic_filename = os.path.join("..", "data", "test_users.csv")
     test_transaction_filename = os.path.join("..", "data", "test_transactions.csv")
-
+    
     test_data = CreditDataset(test_transaction_filename,
                                   test_demographic_filename,
                                   credit_card_filename,
+                                  card_categories=training_data.card_categories,
                                   num_weeks=num_weeks)
                                   
     
     test_dataloader = DataLoader(
         test_data, batch_size=batch_size, shuffle=True,
     )
-
+    
     credit_rank_data = CreditRankDataset(test_transaction_filename,
                                          test_demographic_filename,
                                          credit_card_filename,
+                                         training_data.card_categories,
                                          num_weeks=num_weeks)
-    test_rank_dataloader = DataLoader(credit_rank_data)
-    return training_data, train_dataloader, test_data, test_dataloader, test_rank_dataloader
+    
+    return training_data, train_dataloader, test_data, test_dataloader, credit_rank_data

@@ -5,7 +5,7 @@ import os
 import torch
 
 if __name__ == "__main__":
-    training_data, train_dataloader, test_data, test_dataloader, test_rank_dataloader = load_data(num_weeks=6)
+    training_data, train_dataloader, test_data, test_dataloader, test_rank_dataset = load_data(num_weeks=6)
     model = RecommendationSystem(8, 7, 100, test_data.num_credit_cards, 256, 4, 256)
     
     num_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
@@ -14,13 +14,16 @@ if __name__ == "__main__":
     model.train()
     optimizer = optim.AdamW(model.parameters(), lr=0.0005)
 
-    model.learn(train_dataloader, optimizer, 1)
+    model.learn(train_dataloader, optimizer, 2)
     model.eval()
 
-    #print("MSE Loss on Test Set: ",
-    #      model.predict(test_dataloader))
+    print("MSE Loss on Test Set: ",
+          model.predict(test_dataloader))
     print("Average Correlation Between Predicted and True Ranking",
-          model.evaluate_ranking(test_rank_dataloader))
+          model.evaluate_ranking(test_rank_dataset))
+    print("Recall@3 Score:",
+          model.recall_at_k(test_rank_dataset,
+                            k=3))
 
     torch.save(model,
                os.path.join("..", "models", "rec_system.pth"))
