@@ -21,9 +21,9 @@ if __name__ == "__main__":
           model.predict(test_dataloader))
     print("Average Correlation Between Predicted and True Ranking",
           model.evaluate_ranking(test_rank_dataset))
-    print("Recall@3 Score:",
+    print("Recall@2 Score:",
           model.recall_at_k(test_rank_dataset,
-                            k=3))
+                            k=2))
 
     torch.save(model,
                os.path.join("..", "models", "rec_system.pth"))

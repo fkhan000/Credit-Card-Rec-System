@@ -61,7 +61,7 @@ class Transaction(Base):
     cc_id = Column(Integer, ForeignKey('credit_cards.cc_id'))
     merchant_id = Column(Integer, ForeignKey('merchants.merchant_id'))
     amount = Column(Float, nullable=False)
-    zipcode = Column(Integer, nullable=False)
+    zipcode = Column(Integer, nullable=True)
     timestamp = Column(TIMESTAMP, nullable=False)
 
 
@@ -73,12 +73,14 @@ class CreditCards(Base):
         cc_id (int): The primary key for the credit card.
         name (str): The name of the card.
         description (str): A description of the credit card (e.g., 'Visa', 'MasterCard').
+        benefits (str): A description of the benefits that the card provides.
     """
     __tablename__ = 'credit_cards'
 
     cc_id = Column(Integer, primary_key=True)
     name=Column(String, nullable=False)
     description = Column(String, nullable=False)
+    benefits = Column(String, nullable=False)
 
 
 class Owns(Base):
@@ -110,7 +112,7 @@ class Merchant(Base):
 
 
 def main():
-    engine = create_engine('sqlite:///:memory:', echo=True)
+    engine = create_engine('sqlite:///:memory:', echo=False)
     Base.metadata.create_all(engine)
 
     Session = sessionmaker(bind=engine)
@@ -118,14 +120,14 @@ def main():
 
     print("Loading in users ...")
     users_df = pd.read_csv(os.path.join("..", "..", "data", "sd254_users.csv"))
-    for _, row in tqdm(users_df.iterrows(), length=len(users_df)):
+    for _, row in tqdm(users_df.iterrows(), total=len(users_df)):
         new_user = User(
             gender=row["Gender"],
-            income=row["Yearly Income - Person"],
-            date=datetime(row["Birth Year"], row["Birth Month"]),
-            latitude=row["latitude"],
-            longitude=row["longitude"],
-            debt=row["Total Debt"],
+            income=float(row["Yearly Income - Person"][1:]),
+            date_of_birth=datetime(row["Birth Year"], row["Birth Month"], 1),
+            latitude=row["Latitude"],
+            longitude=row["Longitude"],
+            debt=float(row["Total Debt"][1:]),
             fico_score=row["FICO Score"]
         )
         session.add(new_user)
@@ -133,12 +135,13 @@ def main():
     print("Loading in credit cards...")
     #TODO: Make the credit_cards.json file
     with open(os.path.join("..", "..", "data", "credit_cards.json")) as f:
-        cc_dict = json.load(f)
+        cc_dict = json.load(f)["credit_cards"]
     
     for card in tqdm(cc_dict):
         new_cc = CreditCards(
             name=card["name"],
-            description=card["description"]
+            description=card["description"],
+            benefits=" ".join(card["benefits"])
         )
         session.add(new_cc)
     
@@ -148,16 +151,16 @@ def main():
     
     for merchant in tqdm(merchant_dict):
         new_merchant = Merchant(
-            merchant_id=merchant,
-            description=merchant_dict[merchant]
+            merchant_id=merchant["mcc"],
+            description=merchant["description"]
         )
         session.add(new_merchant)
 
     print("\nLoading in Transactions...")
     
-    cc_df = pd.read_csv(os.path.join("..", "..", "data", "sd254_cards.csv"))
+    cc_df = pd.read_csv(os.path.join("..", "..", "data", "cc_dataset_with_labels.csv"))
     cc_to_category = dict(zip(cc_df["CARD INDEX"],
-                              cc_df["Credit Card Category"]))
+                              cc_df["Card Category"]))
     categories = [card["name"] for card in cc_dict]
 
     category_to_id = (dict(zip
@@ -167,17 +170,20 @@ def main():
                       )))
     
     transactions_df = pd.read_csv(
-        os.path.join("..", "..", "data", "credit_card_transactions.csv"),
-        usecols=["User", "MCC", "Year", "Month", "Day", "Zip", "Amount"]
+        os.path.join("..", "..", "data", "credit_card_transactions-ibm_v2.csv"),
+        usecols=["User", "Card", "MCC", "Year", "Month", "Day", "Zip", "Amount"]
         )
-    for _, row in tqdm(transactions_df.iterrows(), length=len(transactions_df)):
+    for index, row in tqdm(transactions_df.iterrows(), total=len(transactions_df)):
+        if index > 1e6:
+            break
+
         new_transaction = Transaction(
             user_id = row["User"],
             cc_id = category_to_id[cc_to_category[row["Card"]]],
             merchant_id = row["MCC"],
             amount = float(row["Amount"][1:]),
             zipcode = row["Zip"],
-            timestamp = datetime(row["Year"], row["Month"], row["Day"]).timestamp()
+            timestamp = datetime(row["Year"], row["Month"], row["Day"])
         )
         session.add(new_transaction)
     session.commit()

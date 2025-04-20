@@ -1,0 +1,94 @@
+{
+    "credit_cards": [
+      {
+        "name": "Visa Classic",
+        "description": "Visa Classic is a basic and widely accepted credit card suitable for everyday purchases.",
+        "benefits": [
+          "Accepted globally at millions of locations",
+          "Basic fraud protection and zero liability",
+          "Simple rewards (if offered by issuer)",
+          "Access to Visa’s standard customer service and benefits"
+        ]
+      },
+      {
+        "name": "Visa Gold",
+        "description": "Visa Gold offers additional spending power and enhanced services compared to Visa Classic.",
+        "benefits": [
+          "Higher credit limits",
+          "Travel and emergency assistance services",
+          "Purchase protection and extended warranty",
+          "Roadside dispatch and travel accident insurance"
+        ]
+      },
+      {
+        "name": "Visa Platinum",
+        "description": "Visa Platinum is a premium card designed for individuals who want added security and travel benefits.",
+        "benefits": [
+          "Comprehensive travel insurance coverage",
+          "Purchase protection and extended warranties",
+          "Concierge services",
+          "Global emergency card replacement"
+        ]
+      },
+      {
+        "name": "Mastercard Standard",
+        "description": "Mastercard Standard is an entry-level card that offers essential benefits and global acceptance.",
+        "benefits": [
+          "Global acceptance at millions of locations",
+          "Zero liability protection against unauthorized purchases",
+          "Access to Mastercard Global Services"
+        ]
+      },
+      {
+        "name": "Mastercard Gold",
+        "description": "Mastercard Gold offers more benefits and higher spending limits than the Standard version.",
+        "benefits": [
+          "Travel and purchase protection",
+          "Higher credit limits",
+          "Extended warranty and price protection",
+          "Emergency card replacement"
+        ]
+      },
+      {
+        "name": "Mastercard Platinum",
+        "description": "Mastercard Platinum offers enhanced security, exclusive offers, and travel-related benefits.",
+        "benefits": [
+          "Identity theft resolution services",
+          "Concierge service",
+          "Travel assistance and insurance",
+          "Access to Priceless Cities experiences"
+        ]
+      },
+      {
+        "name": "Amex Blue",
+        "description": "Amex Blue is a modern entry-level American Express card offering strong rewards for everyday spending.",
+        "benefits": [
+          "No annual fee (in most cases)",
+          "Cash back or Membership Rewards points",
+          "Fraud protection and return protection",
+          "Exclusive Amex Offers for shopping, dining, and travel"
+        ]
+      },
+      {
+        "name": "Amex Gold",
+        "description": "Amex Gold is a premium rewards card tailored for foodies and travelers.",
+        "benefits": [
+          "High points earnings on restaurants and supermarkets",
+          "Up to $120 in dining credits annually",
+          "Travel insurance and purchase protection",
+          "Hotel and car rental benefits"
+        ]
+      },
+      {
+        "name": "Amex Platinum",
+        "description": "Amex Platinum is a top-tier card with luxury travel benefits and concierge services.",
+        "benefits": [
+          "Access to airport lounges worldwide (Priority Pass, Centurion, Delta Sky Clubs)",
+          "Annual travel credits and hotel elite status",
+          "Concierge service and exclusive event access",
+          "Premium travel insurance and purchase protection"
+        ]
+      }
+    ]
+  }
+  
