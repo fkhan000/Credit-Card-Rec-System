@@ -1,93 +1,100 @@
 {
     "credit_cards": [
       {
-        "name": "Visa Classic",
-        "description": "Visa Classic is a basic and widely accepted credit card suitable for everyday purchases.",
+        "name": "Chase Freedom Flex",
+        "description": "A no-annual-fee card offering rotating 5% cashback categories, plus elevated rewards on travel, dining, and drugstores.",
         "benefits": [
-          "Accepted globally at millions of locations",
-          "Basic fraud protection and zero liability",
-          "Simple rewards (if offered by issuer)",
-          "Access to Visa’s standard customer service and benefits"
-        ]
+          "No annual fee",
+          "Intro APR offer on purchases and balance transfers",
+          "Cell phone protection when you pay your bill with the card",
+          "Access to Mastercard World Elite benefits"
+        ],
+        "grocery_cashback_bonus": 0,
+        "dining_cashback_bonus": 0.03,
+        "travel_cashback_bonus": 0.05,
+        "general_cashback_bonus": 0.01,
+        "annual_fee": 0,
+        "image": "chase_freedom_flex.png"
       },
       {
-        "name": "Visa Gold",
-        "description": "Visa Gold offers additional spending power and enhanced services compared to Visa Classic.",
+        "name": "Chase Slate Edge",
+        "description": "A credit-building card with no annual fee, focusing on low interest rates and credit line increases.",
         "benefits": [
-          "Higher credit limits",
-          "Travel and emergency assistance services",
+          "Automatic review for higher credit line with on-time payments",
+          "0% intro APR on purchases and balance transfers",
+          "Annual APR reduction consideration when you pay on time",
+          "No annual fee"
+        ],
+        "grocery_cashback_bonus": 0.0,
+        "dining_cashback_bonus": 0.0,
+        "travel_cashback_bonus": 0.0,
+        "general_cashback_bonus": 0.0,
+        "annual_fee": 0,
+        "image": "chase_slate_edge.png"
+      },
+      {
+        "name": "Chase Sapphire Preferred",
+        "description": "A travel rewards card offering elevated points on travel and dining, with flexible redemption options.",
+        "benefits": [
+          "25% more value when redeeming through Chase Travel",
+          "Primary rental car insurance",
+          "Trip cancellation/interruption insurance",
+          "Purchase protection and extended warranty"
+        ],
+        "grocery_cashback_bonus": 0.6,
+        "dining_cashback_bonus": 0.6,
+        "travel_cashback_bonus": 1.0,
+        "general_cashback_bonus": 0.2,
+        "annual_fee": 95,
+        "image": "chase_sapphire_preferred.png"
+      },
+      {
+        "name": "Chase Freedom Unlimited",
+        "description": "A straightforward cashback card with elevated rewards on travel, dining, and drugstores, plus unlimited 1.5% on all other purchases.",
+        "benefits": [
+          "Intro 0% APR for 15 months on purchases and balance transfers",
+          "No minimum to redeem rewards",
           "Purchase protection and extended warranty",
-          "Roadside dispatch and travel accident insurance"
-        ]
+          "Trip cancellation/interruption insurance"
+        ],
+        "grocery_cashback_bonus": 0.3,
+        "dining_cashback_bonus": 0.6,
+        "travel_cashback_bonus": 1.0,
+        "general_cashback_bonus": 0.3,
+        "annual_fee": 0,
+        "image": "chase_freedom_unlimited.png"
       },
       {
-        "name": "Visa Platinum",
-        "description": "Visa Platinum is a premium card designed for individuals who want added security and travel benefits.",
+        "name": "Chase Sapphire Reserve",
+        "description": "A premium travel card offering high rewards on travel and dining, with luxury perks and benefits.",
         "benefits": [
-          "Comprehensive travel insurance coverage",
-          "Purchase protection and extended warranties",
-          "Concierge services",
-          "Global emergency card replacement"
-        ]
+          "$300 annual travel credit",
+          "Priority Pass airport lounge access",
+          "Global Entry or TSA PreCheck fee credit",
+          "Luxury Hotel & Resort Collection benefits"
+        ],
+        "grocery_cashback_bonus": 0.0,
+        "dining_cashback_bonus": 1.0,
+        "travel_cashback_bonus": 1.0,
+        "general_cashback_bonus": 0.2,
+        "annual_fee": 550,
+        "image": "chase_sapphire_reserve.png"
       },
       {
-        "name": "Mastercard Standard",
-        "description": "Mastercard Standard is an entry-level card that offers essential benefits and global acceptance.",
+        "name": "Chase Freedom Rise",
+        "description": "A card designed to help build credit, offering cashback on everyday purchases with no annual fee.",
         "benefits": [
-          "Global acceptance at millions of locations",
-          "Zero liability protection against unauthorized purchases",
-          "Access to Mastercard Global Services"
-        ]
-      },
-      {
-        "name": "Mastercard Gold",
-        "description": "Mastercard Gold offers more benefits and higher spending limits than the Standard version.",
-        "benefits": [
-          "Travel and purchase protection",
-          "Higher credit limits",
-          "Extended warranty and price protection",
-          "Emergency card replacement"
-        ]
-      },
-      {
-        "name": "Mastercard Platinum",
-        "description": "Mastercard Platinum offers enhanced security, exclusive offers, and travel-related benefits.",
-        "benefits": [
-          "Identity theft resolution services",
-          "Concierge service",
-          "Travel assistance and insurance",
-          "Access to Priceless Cities experiences"
-        ]
-      },
-      {
-        "name": "Amex Blue",
-        "description": "Amex Blue is a modern entry-level American Express card offering strong rewards for everyday spending.",
-        "benefits": [
-          "No annual fee (in most cases)",
-          "Cash back or Membership Rewards points",
-          "Fraud protection and return protection",
-          "Exclusive Amex Offers for shopping, dining, and travel"
-        ]
-      },
-      {
-        "name": "Amex Gold",
-        "description": "Amex Gold is a premium rewards card tailored for foodies and travelers.",
-        "benefits": [
-          "High points earnings on restaurants and supermarkets",
-          "Up to $120 in dining credits annually",
-          "Travel insurance and purchase protection",
-          "Hotel and car rental benefits"
-        ]
-      },
-      {
-        "name": "Amex Platinum",
-        "description": "Amex Platinum is a top-tier card with luxury travel benefits and concierge services.",
-        "benefits": [
-          "Access to airport lounges worldwide (Priority Pass, Centurion, Delta Sky Clubs)",
-          "Annual travel credits and hotel elite status",
-          "Concierge service and exclusive event access",
-          "Premium travel insurance and purchase protection"
-        ]
+          "No annual fee",
+          "Automatic credit limit increase review after 6 months",
+          "Tools to help build credit",
+          "No minimum to redeem cashback"
+        ],
+        "grocery_cashback_bonus": 0.3,
+        "dining_cashback_bonus": 0.3,
+        "travel_cashback_bonus": 0.3,
+        "general_cashback_bonus": 0.3,
+        "annual_fee": 0,
+        "image": "chase_freedom_rise.png"
       }
     ]
   }

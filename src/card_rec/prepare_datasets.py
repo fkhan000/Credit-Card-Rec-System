@@ -144,5 +144,5 @@ def prepare_transaction_data(n_clusters):
 if __name__ == "__main__":
     #create_merchant_categories(10)
     #get_card_type()
-    prepare_transaction_data(10, generate=False)
+    prepare_transaction_data(10)
     #get_ratings()

@@ -79,6 +79,11 @@ class CreditCards(Base):
 
     cc_id = Column(Integer, primary_key=True)
     name=Column(String, nullable=False)
+    grocery_cashback_bonus = Column(Float, nullable=False)
+    travel_cashback_bonus = Column(Float, nullable=False)
+    dining_cashback_bonus = Column(Float, nullable=False)
+    general_cashback_bonus = Column(Float, nullable=False)
+    annual_fee = Column(Float, nullable=False)
     description = Column(String, nullable=False)
     benefits = Column(String, nullable=False)
 
@@ -143,6 +148,11 @@ def main():
         new_cc = CreditCards(
             name=card["name"],
             description=card["description"],
+            grocery_cashback_bonus = card["grocery_cashback_bonus"],
+            dining_cashback_bonus = card["dining_cashback_bonus"],
+            travel_cashback_bonus = card["travel_cashback_bonus"],
+            general_cashback_bonus = card["general_cashback_bonus"],
+            annual_fee = card["annual_fee"],
             benefits=" ".join(card["benefits"])
         )
         session.add(new_cc)
@@ -163,7 +173,20 @@ def main():
     cc_df = pd.read_csv(os.path.join("..", "..", "data", "cc_dataset_with_labels.csv"))
     cc_to_category = dict(zip(cc_df["CARD INDEX"],
                               cc_df["Card Category"]))
-    categories = [card["name"] for card in cc_dict]
+    category_to_chase = {
+        "Visa Classic": "Chase Freedom Flex",
+        "Visa Gold": "Chase Slate Edge",
+        "Visa Platinum": "Chase Sapphire Preferred",
+        "Mastercard Standard": "Chase Freedom Unlimited",
+        "Mastercard Gold": "Chase Sapphire Preferred",
+        "Mastercard Platinum": "Chase Sapphire Preferred",
+        "Amex Blue": "Chase Freedom",
+        "Amex Gold": "Chase Sapphire Preferred",
+        "Amex Platinum": "Chase Saphire Reserve"
+    }
+
+    categories = ["Chase Freedom Flex", "Chase Slate Edge", "Chase Sapphire Preferred",
+                  "Chase Freedom Unlimited", "Chase Freedom", "Chase Sapphire Reserve"]
 
     category_to_id = (dict(zip
                            (
@@ -181,7 +204,7 @@ def main():
 
         new_transaction = Transaction(
             user_id = row["User"],
-            cc_id = category_to_id[cc_to_category[row["Card"]]],
+            cc_id = category_to_id[category_to_chase[cc_to_category[row["Card"]]]],
             merchant_id = row["MCC"],
             amount = float(row["Amount"][1:]),
             zipcode = row["Zip"],

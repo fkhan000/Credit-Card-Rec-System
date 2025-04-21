@@ -8,6 +8,8 @@ from functools import wraps
 from dotenv import load_dotenv
 from sqlalchemy import text
 import requests
+from datetime import timedelta
+
 
 db_path = os.path.join("..", "..", "data", "sqlite_database.db")
 engine = create_engine(f'sqlite:///{db_path}', echo=False)
@@ -51,7 +53,12 @@ def get_card_description(card_name: str) -> Dict[str, Any]:
         return {
             "card_name": card.name,
             "description": card.description,
-            "benefits": card.benefits.split() if isinstance(card.benefits, str) else card.benefits
+            "benefits": card.benefits.split() if isinstance(card.benefits, str) else card.benefits,
+            "grocery_cashback_bonus": card.grocery_cashback_bonus,
+            "travel_cashback_bonus": card.travel_cashback_bonus,
+            "dining_cashback_bonus": card.dining_cashback_bonus,
+            "general_cashback_bonus": card.general_cashback_bonus,
+            "annual_fee": card.annual_fee            
         }
     finally:
         session.close()
@@ -117,3 +124,68 @@ def txt_to_sql(text_query: str) -> Dict[str, Any]:
         return {"error": f"API error: {str(e)}"}
     except Exception as e:
         return {"error": f"SQL execution error: {str(e)}"}
+    
+
+@tool
+def compute_savings(card_name: str, user_id: str) -> Dict[str, float]:
+    """
+    Computes the estimated cashback savings for a user over the past 6 months
+    based on their transaction history and a specified credit card's rewards program.
+
+    Args:
+        card_name (str): The name (or partial name) of the credit card.
+        user_name (str): The username of the user whose transactions will be analyzed.
+
+    Returns:
+        Dict[str, float]: A dictionary mapping spending categories ("grocery", "travel", "dining", "general")
+                          to the total cashback earned in each category based on applicable card bonuses.
+    
+    Notes:
+        - Transactions are filtered to include only those within 6 months of the user's most recent transaction.
+        - MCCs (merchant category codes) are used to categorize each transaction.
+        - Cashback is calculated using the card's category-specific bonus rates.
+    """
+    session = Session()
+
+    card = session.query(CreditCards).filter(CreditCards.name.ilike(f"%{card_name}%")).first()
+
+    most_recent_transaction = (
+        session.query(Transaction)
+        .filter(Transaction.user_id == user_id)
+        .order_by(Transaction.timestamp.desc())
+        .first()
+    )
+
+    six_months_ago = most_recent_transaction.timestamp - timedelta(days=6*30)
+
+    recent_transactions = (
+        session.query(Transaction)
+        .filter(
+            Transaction.user_id == user_id,
+            Transaction.timestamp >= six_months_ago
+        )
+        .all()
+    )
+
+    savings  = {
+        "grocery": 0,
+        "travel": 0,
+        "dining": 0,
+        "general": 0
+    }
+    for transaction in recent_transactions:
+        if transaction.merchant_id in [5411, 5441, 5451, 5462]:
+            savings["grocery"] += transaction.amount
+        elif transaction.merchant_id in [5812, 5813, 5814]:
+            savings["dining"] += transaction.amount
+        elif transaction.merchant_id in list(range(3000, 3300)) + [4511]:
+            savings["travel"] += transaction.amount
+        else:
+            savings["general"] += transaction.amount
+    
+    savings["grocery"] *= card.grocery_cashback_bonus
+    savings["general"] *= card.general_cashback_bonus
+    savings["travel"] *= card.travel_cashback_bonus
+    savings["dining"] *= card.dining_cashback_bonus
+
+    return savings

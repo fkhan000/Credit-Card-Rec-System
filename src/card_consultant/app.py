@@ -3,6 +3,7 @@ import warnings
 from agent import CreditCardAgent
 from dotenv import load_dotenv
 import os
+import json
 
 warnings.filterwarnings("ignore", category=FutureWarning)
 load_dotenv()
@@ -145,53 +146,11 @@ agent = st.session_state.agent
 st.sidebar.markdown("<h2 class='sidebar-title'>Suggested Credit Cards</h2>", unsafe_allow_html=True)
 st.sidebar.markdown("<p>Welcome Karim 👋</p>", unsafe_allow_html=True)
 
-card_data = [
-    {
-        "name": "Visa Gold",
-        "image": os.path.join("card_images", "visa_gold.jpg"),
-        "benefits": [
-            "Travel insurance and purchase protection",
-            "Worldwide acceptance and concierge service",
-            "Emergency card replacement and cash disbursement"
-        ]
-    },
-    {
-        "name": "Amex Gold",
-        "image": os.path.join("card_images", "amex_gold.png"),
-        "benefits": [
-            "4x points at restaurants, including takeout and delivery",
-            "4x points at U.S. supermarkets (up to $25,000 per year)",
-            "3x points on flights booked directly or via amextravel.com"
-        ]
-    },
-    {
-        "name": "Visa Classic",
-        "image": os.path.join("card_images", "visa_classic.png"),
-        "benefits": [
-            "1% cash back on everyday purchases",
-            "No annual fee",
-            "Visa Zero Liability and global ATM access"
-        ]
-    },
-    {
-        "name": "Amex Platinum",
-        "image": os.path.join("card_images", "amex_platinum.jpg"),
-        "benefits": [
-            "5x points on flights and hotels booked via Amex Travel",
-            "Access to 1,400+ airport lounges worldwide",
-            "$200 airline fee credit + Uber VIP status"
-        ]
-    },
-    {
-        "name": "Mastercard Gold",
-        "image": os.path.join("card_images", "mastercard_gold.jpg"),
-        "benefits": [
-            "Extended warranty and price protection",
-            "Mastercard Global Services and ID Theft Protection",
-            "Travel accident insurance and roadside assistance"
-        ]
-    },
-]
+with open(os.path.join("..", "..", "data", "credit_cards.json"), "r") as f:
+    card_data = json.load(f)["credit_cards"]
+
+for index in range(len(card_data)):
+    card_data[index]["image"] = os.path.join("card_images", card_data[index]["image"])
 
 st.sidebar.markdown('<div class="scroll-container">', unsafe_allow_html=True)
 for card in card_data:
