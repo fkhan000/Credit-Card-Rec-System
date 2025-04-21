@@ -4,3 +4,5 @@ data/*
 !data/merchant_data.json
 !data/credit_cards.json
 !mcc_description.json
+src/card_consultant/__pycache__/agent.cpython-39.pyc
+*.pyc
