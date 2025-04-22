@@ -127,14 +127,14 @@ def txt_to_sql(text_query: str) -> Dict[str, Any]:
     
 
 @tool
-def compute_savings(card_name: str, user_id: str) -> Dict[str, float]:
+def compute_savings(card_name: str, user_id: int) -> Dict[str, float]:
     """
     Computes the estimated cashback savings for a user over the past 6 months
     based on their transaction history and a specified credit card's rewards program.
 
     Args:
         card_name (str): The name (or partial name) of the credit card.
-        user_name (str): The username of the user whose transactions will be analyzed.
+        user_id (int): The user id of the user whose transactions will be analyzed.
 
     Returns:
         Dict[str, float]: A dictionary mapping spending categories ("grocery", "travel", "dining", "general")
@@ -271,6 +271,7 @@ def get_top_merchants(user_id: int, n: int = 5) -> Dict[str, Any]:
             .limit(n)
             .all()
         )
+        print(results)
 
         top_merchants = [
             {"merchant": merchant_descriptor, "transactions": txn_count}

@@ -138,7 +138,7 @@ st.markdown("""
 
 # Initialize session state
 if "agent" not in st.session_state:
-    st.session_state.agent = CreditCardAgent(3)
+    st.session_state.agent = CreditCardAgent(128)
 if "prefill" not in st.session_state:
     st.session_state.prefill = ""
 
