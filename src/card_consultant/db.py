@@ -126,7 +126,7 @@ def main():
     session = Session()
 
     print("Loading in users ...")
-    users_df = pd.read_csv(os.path.join("..", "..", "data", "sd254_users.csv"))
+    users_df = pd.read_csv(os.path.join("..", "..", "data", "test_users.csv"))
     for _, row in tqdm(users_df.iterrows(), total=len(users_df)):
         new_user = User(
             gender=row["Gender"],
@@ -195,7 +195,7 @@ def main():
                       )))
     
     transactions_df = pd.read_csv(
-        os.path.join("..", "..", "data", "credit_card_transactions-ibm_v2.csv"),
+        os.path.join("..", "..", "data", "test_transactions.csv"),
         usecols=["User", "Card", "MCC", "Year", "Month", "Day", "Zip", "Amount"]
         )
     for index, row in tqdm(transactions_df.iterrows(), total=len(transactions_df)):
