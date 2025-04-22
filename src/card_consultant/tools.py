@@ -1,15 +1,15 @@
 from langchain_community.tools import tool
 from typing import Dict, Any
 from db import User, CreditCards, Transaction, Merchant, Owns, Base
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text, func
 from sqlalchemy.orm import sessionmaker
 import os
-from functools import wraps
 from dotenv import load_dotenv
-from sqlalchemy import text
 import requests
 from datetime import timedelta
-
+import matplotlib.pyplot as plt
+import base64
+from io import BytesIO
 
 db_path = os.path.join("..", "..", "data", "sqlite_database.db")
 engine = create_engine(f'sqlite:///{db_path}', echo=False)
@@ -189,3 +189,99 @@ def compute_savings(card_name: str, user_id: str) -> Dict[str, float]:
     savings["dining"] *= card.dining_cashback_bonus
 
     return savings
+
+@tool
+def get_user_profile(user_id: int) -> Dict[str, Any]:
+    """
+    Retrieve the demographic and financial profile of a user by their ID.
+
+    Args:
+        user_id (int): The unique identifier of the user in the database.
+
+    Returns:
+        Dict[str, Any]: A dictionary containing the user's profile information, including:
+            - gender (str): The user's gender (e.g., 'M', 'F').
+            - income (float): The user's reported income.
+            - date_of_birth (datetime): The user's date of birth.
+            - latitude (float): The latitude of the user's home location.
+            - longitude (float): The longitude of the user's home location.
+            - debt (float): The user's total debt.
+            - fico_score (float): The user's FICO credit score.
+
+        If the user is not found, the dictionary will contain an "error" key.
+
+    Example:
+        get_user_profile(101) ➝ {
+            "gender": "F",
+            "income": 85000,
+            "date_of_birth": "1991-04-12T00:00:00",
+            "latitude": 40.7128,
+            "longitude": -74.0060,
+            "debt": 12000,
+            "fico_score": 720
+        }
+    """
+    session = Session()
+    try:
+        user = session.query(User).filter(User.user_id == user_id).first()
+        if not user:
+            return {"error": f"No user found with user id '{user_id}'."}
+
+        return {
+            "gender": user.gender,
+            "income": user.income,
+            "date_of_birth": user.date_of_birth,
+            "latitude": user.latitude,
+            "longitude": user.longitude,
+            "debt": user.debt,
+            "fico_score": user.fico_score
+        }
+    finally:
+        session.close()
+
+@tool
+def get_top_merchants(user_id: int, n: int = 5) -> Dict[str, Any]:
+    """
+    Returns the top `n` merchants a user has interacted with based on transaction frequency.
+
+    Args:
+        user_id (int): The ID of the user.
+        n (int): Number of top merchants to return.
+
+    Returns:
+        Dict[str, Any]: A dictionary containing the top merchants and their transaction counts.
+        
+    Example:
+        {
+            "top_merchants": [
+                {"merchant": "Amazon", "transactions": 12},
+                {"merchant": "Starbucks", "transactions": 9},
+                {"merchant": "Walmart", "transactions": 7}
+            ]
+        }
+    """
+    session = Session()
+    try:
+        results = (
+            session.query(Merchant.description, func.count(Transaction.transaction_id).label("txn_count"))
+            .join(Transaction, Transaction.merchant_id == Merchant.merchant_id)
+            .filter(Transaction.user_id == user_id)
+            .group_by(Merchant.description)
+            .order_by(func.count(Transaction.transaction_id).desc())
+            .limit(n)
+            .all()
+        )
+
+        top_merchants = [
+            {"merchant": merchant_descriptor, "transactions": txn_count}
+            for merchant_descriptor, txn_count in results
+        ]
+
+        return {
+            "top_merchants": top_merchants
+        }
+
+    except Exception as e:
+        return {"error": str(e)}
+    finally:
+        session.close()

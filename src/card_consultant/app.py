@@ -4,6 +4,8 @@ from agent import CreditCardAgent
 from dotenv import load_dotenv
 import os
 import json
+from io import BytesIO
+
 
 warnings.filterwarnings("ignore", category=FutureWarning)
 load_dotenv()
@@ -136,7 +138,7 @@ st.markdown("""
 
 # Initialize session state
 if "agent" not in st.session_state:
-    st.session_state.agent = CreditCardAgent()
+    st.session_state.agent = CreditCardAgent(3)
 if "prefill" not in st.session_state:
     st.session_state.prefill = ""
 
@@ -191,4 +193,21 @@ if not user_input and st.session_state.prefill:
 if user_input:
     st.chat_message("user").markdown(user_input)
     output = agent.ask(user_input)
-    st.chat_message("assistant").markdown(output)
+
+    if isinstance(output, dict):
+        if "message" in output:
+            st.chat_message("assistant").markdown(output["message"])
+        else:
+            st.chat_message("assistant").markdown("Here’s what I found:")
+
+        if "image_bytes" in output:
+            image_bytes = output["image_bytes"]
+            st.image(BytesIO(image_bytes), use_column_width=True)
+
+        if "category_totals" in output:
+            st.markdown("### Category Totals")
+            for category, amount in output["category_totals"].items():
+                st.markdown(f"- **{category}**: ${amount:.2f}")
+
+    else:
+        st.chat_message("assistant").markdown(output)
