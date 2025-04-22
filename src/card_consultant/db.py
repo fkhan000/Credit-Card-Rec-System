@@ -118,6 +118,10 @@ class Merchant(Base):
 
 def main():
     db_path = os.path.join("..", "..", "data", "sqlite_database.db")
+
+    if os.path.exists(db_path):
+        os.remove(db_path)
+        
     engine = create_engine(f'sqlite:///{db_path}', echo=False)
     #engine = create_engine('sqlite:///:db::', echo=False)
     Base.metadata.create_all(engine)
