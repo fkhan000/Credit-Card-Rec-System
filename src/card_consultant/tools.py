@@ -7,7 +7,7 @@ import os
 from dotenv import load_dotenv
 import requests
 from datetime import timedelta
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 import base64
 from io import BytesIO
 
