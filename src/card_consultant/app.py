@@ -138,7 +138,7 @@ st.markdown("""
 
 # Initialize session state
 if "agent" not in st.session_state:
-    st.session_state.agent = CreditCardAgent(128)
+    st.session_state.agent = CreditCardAgent(1647)
 if "prefill" not in st.session_state:
     st.session_state.prefill = ""
 
@@ -146,7 +146,7 @@ agent = st.session_state.agent
 
 # Sidebar Card Recommendations
 st.sidebar.markdown("<h2 class='sidebar-title'>Suggested Credit Cards</h2>", unsafe_allow_html=True)
-st.sidebar.markdown("<p>Welcome Karim 👋</p>", unsafe_allow_html=True)
+st.sidebar.markdown("<p>Welcome Amir 👋</p>", unsafe_allow_html=True)
 
 with open(os.path.join("..", "..", "data", "credit_cards.json"), "r") as f:
     card_data = json.load(f)["credit_cards"]
@@ -155,7 +155,8 @@ for index in range(len(card_data)):
     card_data[index]["image"] = os.path.join("card_images", card_data[index]["image"])
 
 st.sidebar.markdown('<div class="scroll-container">', unsafe_allow_html=True)
-for card in card_data:
+for index in [3, 2]:
+    card = card_data[index]
     with st.sidebar.container():
         st.markdown("<div class='card-block'>", unsafe_allow_html=True)
         st.markdown(f"<div class='card-name'>{card['name']}</div>", unsafe_allow_html=True)
@@ -169,10 +170,6 @@ for card in card_data:
         with col2:
             if st.button("Talk with an Agent", key="talk_" + card["name"]):
                 st.session_state.prefill = f"Can you tell me more about the {card['name']} card?"
-
-
-
-
 
 st.sidebar.markdown('</div>', unsafe_allow_html=True)
 

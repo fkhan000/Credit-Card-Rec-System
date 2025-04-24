@@ -133,6 +133,7 @@ def main():
     users_df = pd.read_csv(os.path.join("..", "..", "data", "test_users.csv"))
     for _, row in tqdm(users_df.iterrows(), total=len(users_df)):
         new_user = User(
+            user_id=row["User"],
             gender=row["Gender"],
             income=float(row["Yearly Income - Person"][1:]),
             date_of_birth=datetime(row["Birth Year"], row["Birth Month"], 1),

@@ -41,10 +41,10 @@
           "Trip cancellation/interruption insurance",
           "Purchase protection and extended warranty"
         ],
-        "grocery_cashback_bonus": 0.6,
-        "dining_cashback_bonus": 0.6,
-        "travel_cashback_bonus": 1.0,
-        "general_cashback_bonus": 0.2,
+        "grocery_cashback_bonus": 0.02,
+        "dining_cashback_bonus": 0.03,
+        "travel_cashback_bonus": 0.05,
+        "general_cashback_bonus": 0.01,
         "annual_fee": 95,
         "image": "chase_sapphire_preferred.png"
       },
@@ -57,10 +57,10 @@
           "Purchase protection and extended warranty",
           "Trip cancellation/interruption insurance"
         ],
-        "grocery_cashback_bonus": 0.3,
-        "dining_cashback_bonus": 0.6,
-        "travel_cashback_bonus": 1.0,
-        "general_cashback_bonus": 0.3,
+        "grocery_cashback_bonus": 0.05,
+        "dining_cashback_bonus": 0.03,
+        "travel_cashback_bonus": 0.05,
+        "general_cashback_bonus": 0.015,
         "annual_fee": 0,
         "image": "chase_freedom_unlimited.png"
       },
