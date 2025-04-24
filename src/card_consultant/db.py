@@ -203,8 +203,12 @@ def main():
         os.path.join("..", "..", "data", "test_transactions.csv"),
         usecols=["User", "Card", "MCC", "Year", "Month", "Day", "Zip", "Amount"]
         )
+    
+    transactions_df = transactions_df.reindex(index=transactions_df.index[::-1])
+    transactions_df.reset_index(inplace=True, drop=True)
+                        
     for index, row in tqdm(transactions_df.iterrows(), total=len(transactions_df)):
-        if index > 1e6:
+        if index > 1.5e6:
             break
 
         new_transaction = Transaction(

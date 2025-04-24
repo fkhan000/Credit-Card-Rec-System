@@ -146,7 +146,7 @@ agent = st.session_state.agent
 
 # Sidebar Card Recommendations
 st.sidebar.markdown("<h2 class='sidebar-title'>Suggested Credit Cards</h2>", unsafe_allow_html=True)
-st.sidebar.markdown("<p>Welcome Amir 👋</p>", unsafe_allow_html=True)
+st.sidebar.markdown("<p>Welcome Jeremiah 👋</p>", unsafe_allow_html=True)
 
 with open(os.path.join("..", "..", "data", "credit_cards.json"), "r") as f:
     card_data = json.load(f)["credit_cards"]
@@ -174,7 +174,7 @@ for index in [3, 2]:
 st.sidebar.markdown('</div>', unsafe_allow_html=True)
 
 # Main Chat UI
-st.markdown("""<div class='chat-title'>🤖 Credit Card Consultant Chatbot</div>""", unsafe_allow_html=True)
+st.markdown("""<div class='chat-title'>🤖 AI Card Consultant</div>""", unsafe_allow_html=True)
 
 # Display previous chat
 for message in agent.get_memory():
@@ -189,8 +189,8 @@ if not user_input and st.session_state.prefill:
 
 if user_input:
     st.chat_message("user").markdown(user_input)
-    output = agent.ask(user_input)
-
+    with st.spinner("Thinking..."):
+        output = agent.ask(user_input)
     if isinstance(output, dict):
         if "message" in output:
             st.chat_message("assistant").markdown(output["message"])
