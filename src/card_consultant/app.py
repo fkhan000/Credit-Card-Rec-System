@@ -29,7 +29,7 @@ st.markdown("""
             color: black;
             padding: 1rem;
         }
-        button[data-testid="baseButton"][aria-label^="Talk with an Agent"] {
+        button[data-testid="baseButton"][aria-label^="Talk to Jaci"] {
             background-color: #005eb8;
             color: white;
             border: none;
@@ -146,7 +146,7 @@ agent = st.session_state.agent
 
 # Sidebar Card Recommendations
 st.sidebar.markdown("<h2 class='sidebar-title'>Suggested Credit Cards</h2>", unsafe_allow_html=True)
-st.sidebar.markdown("<p>Welcome Jeremiah 👋</p>", unsafe_allow_html=True)
+st.sidebar.markdown("<p>Welcome Adam 👋</p>", unsafe_allow_html=True)
 
 with open(os.path.join("..", "..", "data", "credit_cards.json"), "r") as f:
     card_data = json.load(f)["credit_cards"]
@@ -155,7 +155,7 @@ for index in range(len(card_data)):
     card_data[index]["image"] = os.path.join("card_images", card_data[index]["image"])
 
 st.sidebar.markdown('<div class="scroll-container">', unsafe_allow_html=True)
-for index in [3, 2]:
+for index in [2, 4]:
     card = card_data[index]
     with st.sidebar.container():
         st.markdown("<div class='card-block'>", unsafe_allow_html=True)
@@ -168,13 +168,13 @@ for index in [3, 2]:
         with col1:
             st.markdown("<button class='apply-btn'>Apply Now</button>", unsafe_allow_html=True)
         with col2:
-            if st.button("Talk with an Agent", key="talk_" + card["name"]):
+            if st.button("Talk to Jaci", key="talk_" + card["name"]):
                 st.session_state.prefill = f"Can you tell me more about the {card['name']} card?"
 
 st.sidebar.markdown('</div>', unsafe_allow_html=True)
 
 # Main Chat UI
-st.markdown("""<div class='chat-title'>🤖 AI Card Consultant</div>""", unsafe_allow_html=True)
+st.markdown("""<div class='chat-title'>🤖 Jaci</div>""", unsafe_allow_html=True)
 
 # Display previous chat
 for message in agent.get_memory():

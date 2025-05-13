@@ -50,14 +50,20 @@ def get_card_description(card_name: str) -> Dict[str, Any]:
         if not card:
             return {"error": f"No credit card found with name containing '{card_name}'."}
 
-        return {
-            "card_name": card.name,
-            "description": card.description,
-            "benefits": card.benefits.split() if isinstance(card.benefits, str) else card.benefits,
+        """
             "grocery_cashback_bonus": card.grocery_cashback_bonus,
             "travel_cashback_bonus": card.travel_cashback_bonus,
             "dining_cashback_bonus": card.dining_cashback_bonus,
             "general_cashback_bonus": card.general_cashback_bonus,
+        """
+        return {
+            "card_name": card.name,
+            "description": card.description,
+            "benefits": card.benefits.split() if isinstance(card.benefits, str) else card.benefits,
+            "grocery_points": int(card.grocery_cashback_bonus / .01),
+            "dining_points": int(card.dining_cashback_bonus / .01),
+            "travel_points": int(card.travel_cashback_bonus / .01),
+            "general_points": int(card.general_cashback_bonus / .01),
             "annual_fee": card.annual_fee            
         }
     finally:
@@ -129,7 +135,7 @@ def txt_to_sql(text_query: str) -> Dict[str, Any]:
 @tool
 def compute_savings(card_name: str, user_id: int) -> Dict[str, float]:
     """
-    Computes the estimated cashback savings for a user over the past 6 months
+    Computes the estimated savings for a user over the past 6 months
     based on their transaction history and a specified credit card's rewards program.
 
     Args:
@@ -138,7 +144,7 @@ def compute_savings(card_name: str, user_id: int) -> Dict[str, float]:
 
     Returns:
         Dict[str, float]: A dictionary mapping spending categories ("grocery", "travel", "dining", "general")
-                          to the total cashback earned in each category based on applicable card bonuses.
+                          to the total savings earned in each category based on applicable card bonuses.
     
     Notes:
         - Transactions are filtered to include only those within 6 months of the user's most recent transaction.

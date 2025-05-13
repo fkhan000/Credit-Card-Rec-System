@@ -3,7 +3,7 @@ from langchain.agents import create_openai_functions_agent, AgentExecutor
 from langchain.memory import ConversationBufferMemory
 from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
 from tools import (get_card_description,
-                   txt_to_sql,
+                   #txt_to_sql,
                    compute_savings,
                    get_top_merchants,
                    get_user_profile
@@ -37,12 +37,12 @@ class CreditCardAgent:
         self.agent = create_openai_functions_agent(
             llm=self.llm,
             prompt=self.prompt,
-            tools=[get_card_description, txt_to_sql, compute_savings, get_user_profile, get_top_merchants],
+            tools=[get_card_description, compute_savings, get_user_profile, get_top_merchants],
         )
 
         self.executor = AgentExecutor(
             agent=self.agent,
-            tools=[get_card_description, txt_to_sql, compute_savings, get_user_profile, get_top_merchants],
+            tools=[get_card_description, compute_savings, get_user_profile, get_top_merchants],
             memory=self.memory,
             verbose=True,
         )

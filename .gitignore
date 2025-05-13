@@ -5,5 +5,6 @@ data/*
 !data/credit_cards.json
 !data/mcc_description.json
 !data/sd254_users.csv
+!data/sqlite_database.db
 src/card_consultant/__pycache__/agent.cpython-39.pyc
 *.pyc

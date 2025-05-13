@@ -37,13 +37,13 @@
         "description": "A travel rewards card offering elevated points on travel and dining, with flexible redemption options.",
         "benefits": [
           "25% more value when redeeming through Chase Travel",
-          "Primary rental car insurance",
-          "Trip cancellation/interruption insurance",
-          "Purchase protection and extended warranty"
+          "Earn 3x points on select streaming services.",
+          "3x points on dining, select streaming services, and online groceries (excluding Target, Walmart, and wholesale clubs)",
+          "$50 Annual Hotel Credit: Statement credit for hotel bookings made through Chase Travel."
         ],
-        "grocery_cashback_bonus": 0.02,
+        "grocery_cashback_bonus": 0.03,
         "dining_cashback_bonus": 0.03,
-        "travel_cashback_bonus": 0.05,
+        "travel_cashback_bonus": 0.0625,
         "general_cashback_bonus": 0.01,
         "annual_fee": 95,
         "image": "chase_sapphire_preferred.png"
@@ -53,11 +53,11 @@
         "description": "A straightforward cashback card with elevated rewards on travel, dining, and drugstores, plus unlimited 1.5% on all other purchases.",
         "benefits": [
           "Intro 0% APR for 15 months on purchases and balance transfers",
-          "No minimum to redeem rewards",
+          "Complimentary 6 months of DashPass",
           "Purchase protection and extended warranty",
           "Trip cancellation/interruption insurance"
         ],
-        "grocery_cashback_bonus": 0.05,
+        "grocery_cashback_bonus": 0.02,
         "dining_cashback_bonus": 0.03,
         "travel_cashback_bonus": 0.05,
         "general_cashback_bonus": 0.015,
@@ -73,10 +73,10 @@
           "Global Entry or TSA PreCheck fee credit",
           "Luxury Hotel & Resort Collection benefits"
         ],
-        "grocery_cashback_bonus": 0.0,
-        "dining_cashback_bonus": 1.0,
-        "travel_cashback_bonus": 1.0,
-        "general_cashback_bonus": 0.2,
+        "grocery_cashback_bonus": 0.01,
+        "dining_cashback_bonus": 0.1,
+        "travel_cashback_bonus": 0.1,
+        "general_cashback_bonus": 0.015,
         "annual_fee": 550,
         "image": "chase_sapphire_reserve.png"
       },
