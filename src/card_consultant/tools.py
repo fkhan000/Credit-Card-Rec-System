@@ -10,16 +10,21 @@ from datetime import timedelta
 # import matplotlib.pyplot as plt
 import base64
 from io import BytesIO
+import streamlit as st
 
-db_path = os.path.join("..", "..", "data", "sqlite_database.db")
+#db_path = os.path.join("..", "..", "data", "sqlite_database.db")
+base_dir = os.path.dirname(os.path.abspath(__file__))
+db_path = os.path.join(base_dir, "..", "..", "data", "sqlite_database.db")
 engine = create_engine(f'sqlite:///{db_path}', echo=False)
 Session = sessionmaker(bind=engine)
 
-env_path = os.path.join("..", ".env")
+TEXT2SQL_API_KEY = st.secrets.get("TEXT2SQL_API_KEY")
+
+#env_path = os.path.join("..", ".env")
 #print(os.path.exists(env_path))
 #print(os.path.abspath(env_path))
-load_dotenv(env_path)
-TEXT2SQL_API_KEY = os.getenv("TEXT2SQL_API_KEY")
+#load_dotenv(env_path)
+#TEXT2SQL_API_KEY = os.getenv("TEXT2SQL_API_KEY")
 #print(TEXT2SQL_API_KEY)
 
 @tool
