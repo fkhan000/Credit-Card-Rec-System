@@ -8,7 +8,10 @@ from io import BytesIO
 
 
 warnings.filterwarnings("ignore", category=FutureWarning)
-load_dotenv()
+
+#base_dir = os.path.dirname(os.path.abspath(__file__))
+#dotenv_path = os.path.join(base_dir, "..", "..", ".env")
+#load_dotenv(dotenv_path)
 
 st.set_page_config(page_title="JPMC Credit Card Consultant", layout="wide", page_icon="💳")
 
@@ -148,11 +151,13 @@ agent = st.session_state.agent
 st.sidebar.markdown("<h2 class='sidebar-title'>Suggested Credit Cards</h2>", unsafe_allow_html=True)
 st.sidebar.markdown("<p>Welcome Adam 👋</p>", unsafe_allow_html=True)
 
-with open(os.path.join("..", "..", "data", "credit_cards.json"), "r") as f:
+#with open(os.path.join("..", "..", "data", "credit_cards.json"), "r") as f:
+with open(os.path.join(base_dir, "..", "..", "data", "credit_cards.json"), "r") as f:
     card_data = json.load(f)["credit_cards"]
 
 for index in range(len(card_data)):
-    card_data[index]["image"] = os.path.join("card_images", card_data[index]["image"])
+    #card_data[index]["image"] = os.path.join("card_images", card_data[index]["image"])
+    card_data[index]["image"] = os.path.join(base_dir, "card_images", card_data[index]["image"])
 
 st.sidebar.markdown('<div class="scroll-container">', unsafe_allow_html=True)
 for index in [2, 4]:

@@ -10,16 +10,26 @@ from tools import (get_card_description,
                    )
 import os
 from dotenv import load_dotenv
+import streamlit as st
+
+
 
 class CreditCardAgent:
     def __init__(self, user_id: int):
-        dotenv_path = os.path.join("..", ".env")
-        load_dotenv(dotenv_path)
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        #dotenv_path = os.path.join(base_dir, "..", ".env")
+        #dotenv_path = os.path.join("..", ".env")
+        #load_dotenv(dotenv_path)
+        api_key = st.secrets["OPENAI_API_KEY"]
+        if api_key:
+            os.environ["OPENAI_API_KEY"] = api_key
 
         self.user_id = user_id
         self.llm = ChatOpenAI(model="gpt-4o", temperature=0)
 
-        with open("system_prompt.md", "r") as f:
+        prompt_path = os.path.join(base_dir, "system_prompt.md")
+
+        with open(prompt_path, "r") as f:
             system_prompt = f.read().replace("{user_id}", str(user_id))
 
         self.prompt = ChatPromptTemplate.from_messages([
